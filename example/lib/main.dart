@@ -1,94 +1,61 @@
-// The S0 smoke screen uses the internal transport directly; it is replaced by
-// the public NetumScanner API in S2.
-// ignore_for_file: implementation_imports
-
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:netum_bluetooth_scanner/src/generated/netum_api.g.dart';
-import 'package:netum_bluetooth_scanner/src/transport/pigeon_transport.dart';
-import 'package:netum_bluetooth_scanner/src/transport/transport.dart';
+import 'package:netum_bluetooth_scanner/netum_bluetooth_scanner.dart';
+import 'package:netum_bluetooth_scanner_example/src/app_state.dart';
+import 'package:netum_bluetooth_scanner_example/src/console_page.dart';
+import 'package:netum_bluetooth_scanner_example/src/devices_page.dart';
+import 'package:netum_bluetooth_scanner_example/src/discover_page.dart';
+import 'package:netum_bluetooth_scanner_example/src/scans_page.dart';
+import 'package:netum_bluetooth_scanner_example/src/status_page.dart';
 
 void main() {
-  runApp(ExampleApp(transport: PigeonTransport()));
+  runApp(ExampleApp(netum: NetumScanner.instance));
 }
 
-class ExampleApp extends StatelessWidget {
-  const ExampleApp({required this.transport, super.key});
+class ExampleApp extends StatefulWidget {
+  const ExampleApp({required this.netum, super.key});
 
-  final NetumTransportApi transport;
+  final NetumScanner netum;
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'NETUM scanner example',
-      home: SmokeScreen(transport: transport),
-    );
-  }
+  State<ExampleApp> createState() => _ExampleAppState();
 }
 
-/// Exercises both channel directions: host calls and the adapter-state event
-/// stream.
-class SmokeScreen extends StatefulWidget {
-  const SmokeScreen({required this.transport, super.key});
-
-  final NetumTransportApi transport;
-
-  @override
-  State<SmokeScreen> createState() => _SmokeScreenState();
-}
-
-class _SmokeScreenState extends State<SmokeScreen> {
-  final _log = <String>[];
-  StreamSubscription<AdapterStateMsg>? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _subscription = widget.transport.adapterStates.listen(
-      (state) => _record('adapterStates event: ${state.name}'),
-      onError: (Object error) => _record('adapterStates error: $error'),
-    );
-    unawaited(_callHost());
-  }
+class _ExampleAppState extends State<ExampleApp> {
+  late final AppState _state = AppState(widget.netum);
 
   @override
   void dispose() {
-    unawaited(_subscription?.cancel());
+    _state.dispose();
     super.dispose();
-  }
-
-  Future<void> _callHost() async {
-    try {
-      final links = await widget.transport.initialize();
-      _record('initialize(): ${links.length} active links');
-      final state = await widget.transport.adapterState();
-      _record('adapterState(): ${state.name}');
-    } on Exception catch (error) {
-      _record('host call failed: $error');
-    }
-  }
-
-  void _record(String message) {
-    final time = TimeOfDay.now().format(context);
-    debugPrint('NETUM $message');
-    if (!mounted) return;
-    setState(() => _log.insert(0, '$time  $message'));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('NETUM scanner example')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _callHost,
-        tooltip: 'Call adapterState()',
-        child: const Icon(Icons.refresh),
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _log.length,
-        itemBuilder: (context, index) => Text(_log[index]),
+    final tabs = <(String, IconData, Widget)>[
+      ('Status', Icons.info_outline, StatusPage(state: _state)),
+      ('Discover', Icons.search, DiscoverPage(state: _state)),
+      ('Devices', Icons.devices, DevicesPage(state: _state)),
+      ('Scans', Icons.qr_code, ScansPage(state: _state)),
+      ('Console', Icons.terminal, ConsolePage(state: _state)),
+    ];
+    return MaterialApp(
+      title: 'NETUM scanner example',
+      theme: ThemeData(colorSchemeSeed: Colors.indigo),
+      home: DefaultTabController(
+        length: tabs.length,
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('NETUM scanner example'),
+            bottom: TabBar(
+              isScrollable: true,
+              tabs: [
+                for (final (label, icon, _) in tabs)
+                  Tab(text: label, icon: Icon(icon)),
+              ],
+            ),
+          ),
+          body: TabBarView(children: [for (final (_, _, page) in tabs) page]),
+        ),
       ),
     );
   }

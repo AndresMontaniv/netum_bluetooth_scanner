@@ -1,15 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:netum_bluetooth_scanner/src/generated/netum_api.g.dart';
-import 'package:netum_bluetooth_scanner/src/transport/pigeon_transport.dart';
+import 'package:netum_bluetooth_scanner/netum_bluetooth_scanner.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('host calls reach the platform', (tester) async {
-    final transport = PigeonTransport();
+  testWidgets('initialize and adapter state reach the platform', (
+    tester,
+  ) async {
+    final netum = NetumScanner.instance;
 
-    expect(await transport.initialize(), isEmpty);
-    expect(await transport.adapterState(), isA<AdapterStateMsg>());
+    await netum.initialize();
+
+    expect(netum.currentAdapterState, isNot(AdapterState.unknown));
   });
 }
