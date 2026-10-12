@@ -79,7 +79,7 @@ enum ScanMode {
   pulse('%SCMD#02#'),
 
   /// Only the app triggers scans (see `NetumCommand.scan.trigger`).
-  host('%SCMD#03#');
+  hostTrigger('%SCMD#03#');
 
   const ScanMode(this.ascii);
 

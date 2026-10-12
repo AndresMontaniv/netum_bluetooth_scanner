@@ -92,7 +92,7 @@ final _built = <NetumCommand, String>{
   _scan.mode(ScanMode.trigger): '%SCMD#00#',
   _scan.mode(ScanMode.continuous): '%SCMD#01#',
   _scan.mode(ScanMode.pulse): '%SCMD#02#',
-  _scan.mode(ScanMode.host): '%SCMD#03#',
+  _scan.mode(ScanMode.hostTrigger): '%SCMD#03#',
   _scan.decodeTimeout(DecodeTimeout.seconds3): '%SCMD#3000D',
   _scan.decodeTimeout(DecodeTimeout.seconds6): '%SCMD#6000D',
   _scan.interval(ScanInterval.milliseconds500): '%SCMD#0500I',
