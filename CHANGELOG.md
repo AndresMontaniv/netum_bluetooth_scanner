@@ -5,4 +5,9 @@
 * Protocol core (pure Dart, no device needed): frame encoder, reassembler, packet classifier, decoder,
   and a per-device session with a one-at-a-time command queue.
 * `NetumCommand` catalog with validated builders, `CommandResult`, `BatteryInfo`, `AdapterState` and the
-  `NetumException` hierarchy. No scanner-facing API yet (`NetumScanner` arrives with Android BLE).
+  `NetumException` hierarchy.
+* Android BLE: permissions, adapter and Location state, discovery (NETUM filter, throttle-safe), connections
+  with a GATT operation queue, several scanners at once, connections that survive a Dart hot restart.
+* Public API: `NetumScanner` (discover, connect, global `scans` / `connectionEvents`) and `NetumDevice`
+  (per-device streams, `triggerScan`, `beep`, `getBattery`, `getFirmwareVersion`, `send`, `sendRaw`).
+* Example app with Status, Discover, Devices, Scans and Console tabs.
