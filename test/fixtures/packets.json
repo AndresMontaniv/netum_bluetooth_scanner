@@ -1,0 +1,1933 @@
+{
+ "description": "Real DS5000 packets captured on Android (BLE, SPP) and iOS (BLE), 2026-10-07/08. Only bytes, direction, relative timing and the pending command are kept. tMs/sinceWriteMs are null where the source log has no timestamps. 'kind' is labelled by content.",
+ "sessions": [
+  {
+   "source": "android-2026-10-07_08-logcat",
+   "transport": "ble",
+   "device": "dev1",
+   "packets": [
+    {
+     "dir": "in",
+     "tMs": 0.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 21155.0,
+     "hex": "02 0E 0A 25 53 43 41 4E 54 4D 23 33 23 F1 10 03",
+     "ascii": "%SCANTM#3#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 21190.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%SCANTM#3#",
+      "framed": true
+     },
+     "sinceWriteMs": 35.0
+    },
+    {
+     "dir": "in",
+     "tMs": 22576.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 25047.0,
+     "hex": "02 0C 0A 24 42 55 5A 5A 23 42 3A F5 F1 03",
+     "ascii": "$BUZZ#B:",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 25093.0,
+     "hex": "0C 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#B:",
+      "framed": true
+     },
+     "sinceWriteMs": 46.0
+    },
+    {
+     "dir": "out",
+     "tMs": 27184.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 30 64 63 E6 EF 03",
+     "ascii": "$BUZZ#BK650dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 27220.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 30 64 63 E6 EF 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK650dc",
+      "framed": true
+     },
+     "sinceWriteMs": 36.0
+    },
+    {
+     "dir": "out",
+     "tMs": 84026.0,
+     "hex": "02 0D 0A 25 42 41 54 5F 56 4F 4C 23 F3 16 03",
+     "ascii": "%BAT_VOL#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 84071.0,
+     "hex": "42 41 54 5F 56 4F 4C 3D 33 2E 38 31 56 20 33 37 25 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "%BAT_VOL#",
+      "framed": true
+     },
+     "sinceWriteMs": 45.0
+    },
+    {
+     "dir": "out",
+     "tMs": 89546.0,
+     "hex": "25 42 41 54 5F 56 4F 4C 23",
+     "ascii": "%BAT_VOL#",
+     "framed": false
+    },
+    {
+     "dir": "in",
+     "tMs": 89583.0,
+     "hex": "42 41 54 5F 56 4F 4C 3D 33 2E 38 31 56 20 33 37 25 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "%BAT_VOL#",
+      "framed": false
+     },
+     "sinceWriteMs": 37.0
+    },
+    {
+     "dir": "out",
+     "tMs": 102096.0,
+     "hex": "02 0D 0A 25 42 41 54 5F 56 4F 4C 23 F3 16 03",
+     "ascii": "%BAT_VOL#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 102125.0,
+     "hex": "42 41 54 5F 56 4F 4C 3D 33 2E 38 31 56 20 33 37 25 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "%BAT_VOL#",
+      "framed": true
+     },
+     "sinceWriteMs": 29.0
+    },
+    {
+     "dir": "out",
+     "tMs": 115155.0,
+     "hex": "02 18 0A 25 52 54 43 53 54 41 4D 50 23 31 37 39 31 34 31 34 32 34 36 C7 CC 03",
+     "ascii": "%RTCSTAMP#1791414246",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 115191.0,
+     "hex": "02 18 0A 25 52 54 43 53 54 41 4D 50 23 31 37 39 31 34 31 34 32 34 36 C7 CC 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "%RTCSTAMP#1791414246",
+      "framed": true
+     },
+     "sinceWriteMs": 36.0
+    },
+    {
+     "dir": "out",
+     "tMs": 120420.0,
+     "hex": "02 0F 0A 25 52 54 43 53 54 41 4D 50 23 31 EC D1 03",
+     "ascii": "%RTCSTAMP#1",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 120455.0,
+     "hex": "02 0F 0A 25 52 54 43 53 54 41 4D 50 23 31 EC D1 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "%RTCSTAMP#1",
+      "framed": true
+     },
+     "sinceWriteMs": 35.0
+    },
+    {
+     "dir": "out",
+     "tMs": 124637.0,
+     "hex": "02 0F 0A 25 52 54 43 53 54 41 4D 50 23 30 EC D2 03",
+     "ascii": "%RTCSTAMP#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 124675.0,
+     "hex": "02 0F 0A 25 52 54 43 53 54 41 4D 50 23 30 EC D2 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "%RTCSTAMP#0",
+      "framed": true
+     },
+     "sinceWriteMs": 38.0
+    },
+    {
+     "dir": "out",
+     "tMs": 127797.0,
+     "hex": "02 0E 0A 25 53 43 41 4E 54 4D 23 33 23 F1 10 03",
+     "ascii": "%SCANTM#3#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 127833.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%SCANTM#3#",
+      "framed": true
+     },
+     "sinceWriteMs": 36.0
+    },
+    {
+     "dir": "in",
+     "tMs": 128757.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 132786.0,
+     "hex": "02 0F 0A 25 52 54 43 53 54 41 4D 50 23 31 EC D1 03",
+     "ascii": "%RTCSTAMP#1",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 132819.0,
+     "hex": "02 0F 0A 25 52 54 43 53 54 41 4D 50 23 31 EC D1 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "%RTCSTAMP#1",
+      "framed": true
+     },
+     "sinceWriteMs": 33.0
+    },
+    {
+     "dir": "in",
+     "tMs": 390128.0,
+     "hex": "4E 33 31 39 44 37 30 30 31 33 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 569114.0,
+     "hex": "41 42 43 44 45 46 47 48 49 4A 30 31 32 33 34 35 36 37 38 39 4B 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 605262.0,
+     "hex": "41 42 43 44 45 46 47 48 49 4A 30 31 32 33 34 35 36 37 38 39 4B 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 799704.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 824411.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 1244390.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 2D 31 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 1247664.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 2D 31 32 33 34 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 1441736.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 2D 31 32 33 34 35 36 37 38 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 1908508.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 30 64 63 E6 EF 03",
+     "ascii": "$BUZZ#BK650dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 1908548.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 30 64 63 E6 EF 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK650dc",
+      "framed": true
+     },
+     "sinceWriteMs": 40.0
+    },
+    {
+     "dir": "out",
+     "tMs": 1910872.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 30 64 63 E6 EF 03",
+     "ascii": "$BUZZ#BK650dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 1910912.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 30 64 63 E6 EF 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK650dc",
+      "framed": true
+     },
+     "sinceWriteMs": 40.0
+    },
+    {
+     "dir": "in",
+     "tMs": 1974119.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 1984224.0,
+     "hex": "41 42 43 44 45 46 47 48 49 4A 30 31 32 33 34 35 36 37 38 39 4B 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 2001291.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 2D 31 32 33 34 35 36 37 38 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 2006912.0,
+     "hex": "3C 0D 2A 45 4D 4E 4F 3B 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null,
+     "note": "misread with an embedded CR: one payload, one barcode"
+    },
+    {
+     "dir": "out",
+     "tMs": 2195892.0,
+     "hex": "02 0B 0A 24 53 57 23 56 45 52 F8 42 03",
+     "ascii": "$SW#VER",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2195932.0,
+     "hex": "62 6E 30 48 44 53 5F 52 46 53 42 54 44 34 33 62 63 5F 43 42 30 37 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$SW#VER",
+      "framed": true
+     },
+     "sinceWriteMs": 40.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2201753.0,
+     "hex": "02 0B 0A 24 53 57 23 56 45 52 F8 42 03",
+     "ascii": "$SW#VER",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2201784.0,
+     "hex": "62 6E 30 48 44 53 5F 52 46 53 42 54 44 34 33 62 63 5F 43 42 30 37 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$SW#VER",
+      "framed": true
+     },
+     "sinceWriteMs": 31.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2230501.0,
+     "hex": "02 0B 0A 25 23 2B 54 43 4E 54 F9 98 03",
+     "ascii": "%#+TCNT",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2230541.0,
+     "hex": "54 6F 74 61 6C 20 43 6F 75 6E 74 65 72 73 3D 30 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "%#+TCNT",
+      "framed": true
+     },
+     "sinceWriteMs": 40.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2254212.0,
+     "hex": "02 0A 0A 24 52 46 23 53 54 FA 7D 03",
+     "ascii": "$RF#ST",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2254239.0,
+     "hex": "53 6C 65 65 70 74 69 6D 65 3D 33 30 6D 69 6E 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$RF#ST",
+      "framed": true
+     },
+     "sinceWriteMs": 27.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2265302.0,
+     "hex": "02 0A 0A 41 54 2B 56 45 52 F9 B6 03",
+     "ascii": "AT+VER",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2265333.0,
+     "hex": "2B 56 45 52 3D 31 2E 36 2E 32 00 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "AT+VER",
+      "framed": true
+     },
+     "sinceWriteMs": 31.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2284114.0,
+     "hex": "02 0B 0A 41 54 2B 4E 41 4D 45 F7 DD 03",
+     "ascii": "AT+NAME",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2284152.0,
+     "hex": "2B 4E 41 4D 45 3D 44 53 20 62 61 72 63 6F 64 65 20 73 63 61 6E 6E 65 72 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "AT+NAME",
+      "framed": true
+     },
+     "sinceWriteMs": 38.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2296011.0,
+     "hex": "02 0B 0A 41 54 2B 41 44 44 52 F8 0D 03",
+     "ascii": "AT+ADDR",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2296045.0,
+     "hex": "2B 41 44 44 52 3D 44 43 30 44 33 30 36 30 42 34 32 43 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "AT+ADDR",
+      "framed": true
+     },
+     "sinceWriteMs": 34.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2316297.0,
+     "hex": "02 0E 0A 25 4D 4F 44 55 4C 45 53 4E 23 F0 29 03",
+     "ascii": "%MODULESN#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2316333.0,
+     "hex": "53 45 34 37 35 30 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "%MODULESN#",
+      "framed": true
+     },
+     "sinceWriteMs": 36.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2344025.0,
+     "hex": "02 0E 0A 25 53 43 41 4E 54 4D 23 31 23 F1 14 03",
+     "ascii": "%SCANTM#1#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2344066.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%SCANTM#1#",
+      "framed": true
+     },
+     "sinceWriteMs": 41.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2380347.0,
+     "hex": "25 53 43 41 4E 54 4D 23 31 23",
+     "ascii": "%SCANTM#1#",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": 2387622.0,
+     "hex": "02 0E 0A 25 53 43 41 4E 54 4D 23 31 23 F1 14 03",
+     "ascii": "%SCANTM#1#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2387659.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%SCANTM#1#",
+      "framed": true
+     },
+     "sinceWriteMs": 37.0
+    },
+    {
+     "dir": "in",
+     "tMs": 2500442.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 2D 31 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 2504322.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 2D 31 32 33 34 35 36 37 38 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 2592872.0,
+     "hex": "3C 0D 2A 45 4D 4E 4F 3B 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null,
+     "note": "misread with an embedded CR: one payload, one barcode"
+    },
+    {
+     "dir": "out",
+     "tMs": 2884216.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 31 F1 AA 03",
+     "ascii": "%ACKBEEP#1",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2884264.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#1",
+      "framed": true
+     },
+     "sinceWriteMs": 48.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2918389.0,
+     "hex": "02 0B 0A 24 53 57 23 56 45 52 F8 42 03",
+     "ascii": "$SW#VER",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2918436.0,
+     "hex": "62 6E 30 48 44 53 5F 52 46 53 42 54 44 34 33 62 63 5F 43 42 30 37 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$SW#VER",
+      "framed": true
+     },
+     "sinceWriteMs": 47.0
+    },
+    {
+     "dir": "out",
+     "tMs": 2934129.0,
+     "hex": "02 0B 0A 24 53 57 23 56 45 52 F8 42 03",
+     "ascii": "$SW#VER",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 2934172.0,
+     "hex": "62 6E 30 48 44 53 5F 52 46 53 42 54 44 34 33 62 63 5F 43 42 30 37 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$SW#VER",
+      "framed": true
+     },
+     "sinceWriteMs": 43.0
+    },
+    {
+     "dir": "in",
+     "tMs": 2944238.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 2970148.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 3007641.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 30 F1 AB 03",
+     "ascii": "%ACKBEEP#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3007692.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#0",
+      "framed": true
+     },
+     "sinceWriteMs": 51.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3009380.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 30 F1 AB 03",
+     "ascii": "%ACKBEEP#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3009421.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#0",
+      "framed": true
+     },
+     "sinceWriteMs": 41.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3011714.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 30 F1 AB 03",
+     "ascii": "%ACKBEEP#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3011761.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#0",
+      "framed": true
+     },
+     "sinceWriteMs": 47.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3014338.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 30 F1 AB 03",
+     "ascii": "%ACKBEEP#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3014388.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#0",
+      "framed": true
+     },
+     "sinceWriteMs": 50.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3015058.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 30 F1 AB 03",
+     "ascii": "%ACKBEEP#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3015102.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#0",
+      "framed": true
+     },
+     "sinceWriteMs": 44.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3015722.0,
+     "hex": "25 41 43 4B 42 45 45 50 23 30",
+     "ascii": "%ACKBEEP#0",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": 3017719.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 30 F1 AB 03",
+     "ascii": "%ACKBEEP#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3017767.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#0",
+      "framed": true
+     },
+     "sinceWriteMs": 48.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3018469.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 30 F1 AB 03",
+     "ascii": "%ACKBEEP#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3018513.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#0",
+      "framed": true
+     },
+     "sinceWriteMs": 44.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3019337.0,
+     "hex": "25 41 43 4B 42 45 45 50 23 30",
+     "ascii": "%ACKBEEP#0",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": 3078262.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 31 F1 AA 03",
+     "ascii": "%ACKBEEP#1",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3078309.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#1",
+      "framed": true
+     },
+     "sinceWriteMs": 47.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3096904.0,
+     "hex": "02 0B 0A 24 53 57 23 56 45 52 F8 42 03",
+     "ascii": "$SW#VER",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3096941.0,
+     "hex": "62 6E 30 48 44 53 5F 52 46 53 42 54 44 34 33 62 63 5F 43 42 30 37 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$SW#VER",
+      "framed": true
+     },
+     "sinceWriteMs": 37.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3106428.0,
+     "hex": "02 0B 0A 24 53 57 23 56 45 52 F8 42 03",
+     "ascii": "$SW#VER",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3106462.0,
+     "hex": "62 6E 30 48 44 53 5F 52 46 53 42 54 44 34 33 62 63 5F 43 42 30 37 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$SW#VER",
+      "framed": true
+     },
+     "sinceWriteMs": 34.0
+    },
+    {
+     "dir": "in",
+     "tMs": 3111770.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 3124510.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 30 F1 AB 03",
+     "ascii": "%ACKBEEP#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3124560.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#0",
+      "framed": true
+     },
+     "sinceWriteMs": 50.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3125500.0,
+     "hex": "02 0E 0A 25 41 43 4B 42 45 45 50 23 30 F1 AB 03",
+     "ascii": "%ACKBEEP#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3125547.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%ACKBEEP#0",
+      "framed": true
+     },
+     "sinceWriteMs": 47.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3126188.0,
+     "hex": "25 41 43 4B 42 45 45 50 23 30",
+     "ascii": "%ACKBEEP#0",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": 3196478.0,
+     "hex": "02 0B 0A 24 42 55 5A 5A 23 33 F8 2D 03",
+     "ascii": "$BUZZ#3",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3196526.0,
+     "hex": "0B 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#3",
+      "framed": true
+     },
+     "sinceWriteMs": 48.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3197441.0,
+     "hex": "02 0B 0A 24 42 55 5A 5A 23 33 F8 2D 03",
+     "ascii": "$BUZZ#3",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3197484.0,
+     "hex": "0B 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#3",
+      "framed": true
+     },
+     "sinceWriteMs": 43.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3198635.0,
+     "hex": "24 42 55 5A 5A 23 33",
+     "ascii": "$BUZZ#3",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": 3207823.0,
+     "hex": "02 0B 0A 24 42 55 5A 5A 23 33 F8 2D 03",
+     "ascii": "$BUZZ#3",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3207879.0,
+     "hex": "0B 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#3",
+      "framed": true
+     },
+     "sinceWriteMs": 56.0
+    },
+    {
+     "dir": "in",
+     "tMs": 3210503.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 3213582.0,
+     "hex": "24 42 55 5A 5A 23 33",
+     "ascii": "$BUZZ#3",
+     "framed": false
+    },
+    {
+     "dir": "in",
+     "tMs": 3215486.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 3268465.0,
+     "hex": "02 0B 0A 24 4D 4F 54 4F 23 31 F8 44 03",
+     "ascii": "$MOTO#1",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3268507.0,
+     "hex": "0B 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$MOTO#1",
+      "framed": true
+     },
+     "sinceWriteMs": 42.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3271425.0,
+     "hex": "02 0B 0A 24 4D 4F 54 4F 23 31 F8 44 03",
+     "ascii": "$MOTO#1",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3271465.0,
+     "hex": "0B 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$MOTO#1",
+      "framed": true
+     },
+     "sinceWriteMs": 40.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3273568.0,
+     "hex": "24 4D 4F 54 4F 23 31",
+     "ascii": "$MOTO#1",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": 3280293.0,
+     "hex": "24 4D 4F 54 4F 23 31",
+     "ascii": "$MOTO#1",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": 3295719.0,
+     "hex": "02 0B 0A 24 4D 4F 54 4F 23 30 F8 45 03",
+     "ascii": "$MOTO#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3295766.0,
+     "hex": "0B 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$MOTO#0",
+      "framed": true
+     },
+     "sinceWriteMs": 47.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3296811.0,
+     "hex": "24 4D 4F 54 4F 23 30",
+     "ascii": "$MOTO#0",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": 3339805.0,
+     "hex": "02 0B 0A 24 4D 4F 54 4F 23 31 F8 44 03",
+     "ascii": "$MOTO#1",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3339845.0,
+     "hex": "0B 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$MOTO#1",
+      "framed": true
+     },
+     "sinceWriteMs": 40.0
+    },
+    {
+     "dir": "in",
+     "tMs": 3342056.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 3346862.0,
+     "hex": "02 0B 0A 24 4D 4F 54 4F 23 30 F8 45 03",
+     "ascii": "$MOTO#0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3346901.0,
+     "hex": "0B 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$MOTO#0",
+      "framed": true
+     },
+     "sinceWriteMs": 39.0
+    },
+    {
+     "dir": "in",
+     "tMs": 3348221.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 3562403.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 3612368.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 3618142.0,
+     "hex": "02 0B 0A 24 42 55 5A 5A 23 31 F8 2F 03",
+     "ascii": "$BUZZ#1",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3618181.0,
+     "hex": "0B 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#1",
+      "framed": true
+     },
+     "sinceWriteMs": 39.0
+    },
+    {
+     "dir": "in",
+     "tMs": 3619544.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": 3741039.0,
+     "hex": "02 0C 0A 24 42 55 5A 5A 23 42 30 F5 FB 03",
+     "ascii": "$BUZZ#B0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3741072.0,
+     "hex": "0C 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#B0",
+      "framed": true
+     },
+     "sinceWriteMs": 33.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3767414.0,
+     "hex": "02 0C 0A 24 42 55 5A 5A 23 42 30 F5 FB 03",
+     "ascii": "$BUZZ#B0",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3767451.0,
+     "hex": "0C 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#B0",
+      "framed": true
+     },
+     "sinceWriteMs": 37.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3791092.0,
+     "hex": "02 0C 0A 24 42 55 5A 5A 23 42 35 F5 F6 03",
+     "ascii": "$BUZZ#B5",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3791123.0,
+     "hex": "0C 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#B5",
+      "framed": true
+     },
+     "sinceWriteMs": 31.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3811214.0,
+     "hex": "02 0C 0A 24 42 55 5A 5A 23 42 44 F5 E7 03",
+     "ascii": "$BUZZ#BD",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3811248.0,
+     "hex": "0C 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#BD",
+      "framed": true
+     },
+     "sinceWriteMs": 34.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3885702.0,
+     "hex": "02 0C 0A 24 42 55 5A 5A 23 42 4A F5 E1 03",
+     "ascii": "$BUZZ#BJ",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3885737.0,
+     "hex": "0C 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#BJ",
+      "framed": true
+     },
+     "sinceWriteMs": 35.0
+    },
+    {
+     "dir": "out",
+     "tMs": 3889177.0,
+     "hex": "02 0C 0A 24 42 55 5A 5A 23 42 4A F5 E1 03",
+     "ascii": "$BUZZ#BJ",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 3889202.0,
+     "hex": "0C 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$BUZZ#BJ",
+      "framed": true
+     },
+     "sinceWriteMs": 25.0
+    },
+    {
+     "dir": "out",
+     "tMs": 4968927.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 31 64 63 E6 EC 03",
+     "ascii": "$BUZZ#BK651dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 4968966.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 31 64 63 E6 EC 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK651dc",
+      "framed": true
+     },
+     "sinceWriteMs": 39.0
+    },
+    {
+     "dir": "out",
+     "tMs": 4979558.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 31 64 63 E6 EC 03",
+     "ascii": "$BUZZ#BK651dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 4979600.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 31 64 63 E6 EC 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK651dc",
+      "framed": true
+     },
+     "sinceWriteMs": 42.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5003247.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 31 64 63 E6 EC 03",
+     "ascii": "$BUZZ#BK651dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5003280.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 31 64 63 E6 EC 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK651dc",
+      "framed": true
+     },
+     "sinceWriteMs": 33.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5007495.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "ascii": "$BUZZ#BK652dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5007534.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK652dc",
+      "framed": true
+     },
+     "sinceWriteMs": 39.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5014878.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "ascii": "$BUZZ#BK652dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5014913.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK652dc",
+      "framed": true
+     },
+     "sinceWriteMs": 35.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5016699.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "ascii": "$BUZZ#BK652dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5016738.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK652dc",
+      "framed": true
+     },
+     "sinceWriteMs": 39.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5018174.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "ascii": "$BUZZ#BK652dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5018208.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK652dc",
+      "framed": true
+     },
+     "sinceWriteMs": 34.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5060347.0,
+     "hex": "02 10 0A 24 42 55 5A 5A 23 42 4B 62 30 64 63 E9 91 03",
+     "ascii": "$BUZZ#BKb0dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5060391.0,
+     "hex": "02 10 0A 24 42 55 5A 5A 23 42 4B 62 30 64 63 E9 91 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BKb0dc",
+      "framed": true
+     },
+     "sinceWriteMs": 44.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5061828.0,
+     "hex": "02 10 0A 24 42 55 5A 5A 23 42 4B 62 30 64 63 E9 91 03",
+     "ascii": "$BUZZ#BKb0dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5061864.0,
+     "hex": "02 10 0A 24 42 55 5A 5A 23 42 4B 62 30 64 63 E9 91 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BKb0dc",
+      "framed": true
+     },
+     "sinceWriteMs": 36.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5138285.0,
+     "hex": "02 0B 0A 24 4D 4F 54 4F 23 31 F8 44 03",
+     "ascii": "$MOTO#1",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5138327.0,
+     "hex": "0B 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "$MOTO#1",
+      "framed": true
+     },
+     "sinceWriteMs": 42.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5159858.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 30 64 63 E6 EF 03",
+     "ascii": "$BUZZ#BK650dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5159898.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 30 64 63 E6 EF 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK650dc",
+      "framed": true
+     },
+     "sinceWriteMs": 40.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5177196.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 31 64 63 E6 EC 03",
+     "ascii": "$BUZZ#BK651dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5177233.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 31 64 63 E6 EC 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK651dc",
+      "framed": true
+     },
+     "sinceWriteMs": 37.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5178626.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 31 64 63 E6 EC 03",
+     "ascii": "$BUZZ#BK651dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5178664.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 31 64 63 E6 EC 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK651dc",
+      "framed": true
+     },
+     "sinceWriteMs": 38.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5194141.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "ascii": "$BUZZ#BK652dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5194175.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK652dc",
+      "framed": true
+     },
+     "sinceWriteMs": 34.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5210183.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "ascii": "$BUZZ#BK652dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5210226.0,
+     "hex": "02 11 0A 24 42 55 5A 5A 23 42 4B 36 35 32 64 63 E6 E9 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BK652dc",
+      "framed": true
+     },
+     "sinceWriteMs": 43.0
+    },
+    {
+     "dir": "out",
+     "tMs": 5223924.0,
+     "hex": "02 10 0A 24 42 55 5A 5A 23 42 4B 62 30 64 63 E9 91 03",
+     "ascii": "$BUZZ#BKb0dc",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 5223959.0,
+     "hex": "02 10 0A 24 42 55 5A 5A 23 42 4B 62 30 64 63 E9 91 03",
+     "kind": "echo",
+     "pending": {
+      "ascii": "$BUZZ#BKb0dc",
+      "framed": true
+     },
+     "sinceWriteMs": 35.0
+    }
+   ]
+  },
+  {
+   "source": "android-2026-10-07_08-logcat",
+   "transport": "spp",
+   "device": "dev1",
+   "packets": [
+    {
+     "dir": "out",
+     "tMs": 0.0,
+     "hex": "02 0D 0A 25 42 41 54 5F 56 4F 4C 23 F3 16 03",
+     "ascii": "%BAT_VOL#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 25.0,
+     "hex": "42 41 54 5F 56 4F 4C 3D 33 2E 37 36 56 20 33 30 25 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "%BAT_VOL#",
+      "framed": true
+     },
+     "sinceWriteMs": 25.0
+    },
+    {
+     "dir": "out",
+     "tMs": 21473.0,
+     "hex": "02 0B 0A 24 53 57 23 56 45 52 F8 42 03",
+     "ascii": "$SW#VER",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 21511.0,
+     "hex": "62 6E 30 48 44 53 5F 52 46 53 42 54 44 34 33 62 63 5F 43 42 30 37 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$SW#VER",
+      "framed": true
+     },
+     "sinceWriteMs": 38.0
+    },
+    {
+     "dir": "out",
+     "tMs": 36231.0,
+     "hex": "02 0E 0A 25 53 43 41 4E 54 4D 23 31 23 F1 14 03",
+     "ascii": "%SCANTM#1#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 36242.0,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%SCANTM#1#",
+      "framed": true
+     },
+     "sinceWriteMs": 11.0
+    },
+    {
+     "dir": "in",
+     "tMs": 68680.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 75771.0,
+     "hex": "41 42 43 44 45 46 47 48 49 4A 30 31 32 33 34 35 36 37 38 39 4B 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 84248.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 87111.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 2D 31 32 33 34 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 90293.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 2D 31 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": 94306.0,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 2D 31 32 33 34 35 36 37 38 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    }
+   ]
+  },
+  {
+   "source": "android-a24-2026-10-08-round2",
+   "transport": "ble",
+   "device": "dev1",
+   "packets": [
+    {
+     "dir": "out",
+     "tMs": 0.0,
+     "hex": "02 14 0A 41 54 2B 4E 41 4D 45 3D 4E 65 74 75 6D 2D 30 31 D6 70 03",
+     "ascii": "AT+NAME=Netum-01",
+     "framed": true
+    },
+    {
+     "dir": "out",
+     "tMs": 117015.0,
+     "hex": "02 0B 0A 41 54 2B 4E 41 4D 45 F7 DD 03",
+     "ascii": "AT+NAME",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": 117054.0,
+     "hex": "2B 4E 41 4D 45 3D 4E 65 74 75 6D 2D 30 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "AT+NAME",
+      "framed": true
+     },
+     "sinceWriteMs": 39.0
+    },
+    {
+     "dir": "in",
+     "tMs": 2254252.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    }
+   ]
+  },
+  {
+   "source": "android-a24-2026-10-08-round2",
+   "transport": "spp",
+   "device": "dev2",
+   "packets": [
+    {
+     "dir": "in",
+     "tMs": 0.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    }
+   ]
+  },
+  {
+   "source": "android-tablet10-2026-10-08-round2",
+   "transport": "ble",
+   "device": "dev1",
+   "packets": [
+    {
+     "dir": "in",
+     "tMs": 0.0,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    }
+   ]
+  },
+  {
+   "source": "ios-2026-10-08-console",
+   "transport": "ble",
+   "device": "dev1",
+   "packets": [
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "25 42 41 54 5F 56 4F 4C 23",
+     "ascii": "%BAT_VOL#",
+     "framed": false
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "42 41 54 5F 56 4F 4C 3D 33 2E 37 37 56 20 33 31 25 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "%BAT_VOL#",
+      "framed": false
+     },
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "02 0D 0A 25 42 41 54 5F 56 4F 4C 23 F3 16 03",
+     "ascii": "%BAT_VOL#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "42 41 54 5F 56 4F 4C 3D 33 2E 37 36 56 20 33 30 25 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "%BAT_VOL#",
+      "framed": true
+     },
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "24 53 57 23 56 45 52",
+     "ascii": "$SW#VER",
+     "framed": false
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "62 6E 30 48 44 53 5F 52 46 53 42 54 44 34 33 62 63 5F 43 42 30 37 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$SW#VER",
+      "framed": false
+     },
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "02 0B 0A 24 53 57 23 56 45 52 F8 42 03",
+     "ascii": "$SW#VER",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "62 6E 30 48 44 53 5F 52 46 53 42 54 44 34 33 62 63 5F 43 42 30 37 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$SW#VER",
+      "framed": true
+     },
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "25 53 43 41 4E 54 4D 23 31 23",
+     "ascii": "%SCANTM#1#",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "25 53 43 41 4E 54 4D 23 31 23",
+     "ascii": "%SCANTM#1#",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "02 0E 0A 25 53 43 41 4E 54 4D 23 31 23 F1 14 03",
+     "ascii": "%SCANTM#1#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%SCANTM#1#",
+      "framed": true
+     },
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "25 53 43 41 4E 54 4D 23 31 23",
+     "ascii": "%SCANTM#1#",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "25 53 43 41 4E 54 4D 23 31 23",
+     "ascii": "%SCANTM#1#",
+     "framed": false
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "02 0E 0A 25 53 43 41 4E 54 4D 23 31 23 F1 14 03",
+     "ascii": "%SCANTM#1#",
+     "framed": true
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "0E 0B",
+     "kind": "ack",
+     "pending": {
+      "ascii": "%SCANTM#1#",
+      "framed": true
+     },
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "24 53 57 23 56 45 52",
+     "ascii": "$SW#VER",
+     "framed": false
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "62 6E 30 48 44 53 5F 52 46 53 42 54 44 34 33 62 63 5F 43 42 30 37 31 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "$SW#VER",
+      "framed": false
+     },
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "out",
+     "tMs": null,
+     "hex": "25 42 41 54 5F 56 4F 4C 23",
+     "ascii": "%BAT_VOL#",
+     "framed": false
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "42 41 54 5F 56 4F 4C 3D 33 2E 37 36 56 20 33 30 25 0D",
+     "kind": "reply",
+     "pending": {
+      "ascii": "%BAT_VOL#",
+      "framed": false
+     },
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "37 37 37 31 36 30 39 30 30 31 36 36 30 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "41 42 43 44 45 46 47 48 49 4A 30 31 32 33 34 35 36 37 38 39 4B 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    },
+    {
+     "dir": "in",
+     "tMs": null,
+     "hex": "4E 45 54 55 4D 2D 44 53 35 30 30 30 2D 4C 4F 4E 47 2D 54 45 53 54 2D 31 32 33 34 35 36 37 38 0D",
+     "kind": "barcode",
+     "pending": null,
+     "sinceWriteMs": null
+    }
+   ]
+  }
+ ]
+}
