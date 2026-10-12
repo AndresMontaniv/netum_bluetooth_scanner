@@ -1,29 +1,50 @@
-import Flutter
-import UIKit
+import CoreBluetooth
 import XCTest
-
-// If your plugin has been explicitly set to "type: .dynamic" in the Package.swift,
-// you will need to add your plugin as a dependency of RunnerTests within Xcode.
 
 @testable import netum_bluetooth_scanner
 
-// This demonstrates a simple unit test of the Swift portion of this plugin's implementation.
-//
-// See https://developer.apple.com/documentation/xctest for more information about using XCTest.
-
+/// Unit tests for the plugin's pure iOS mappings (DEF-10 B8).
 class RunnerTests: XCTestCase {
 
-  func testGetPlatformVersion() {
-    let plugin = NetumBluetoothScannerPlugin()
-
-    let call = FlutterMethodCall(methodName: "getPlatformVersion", arguments: [])
-
-    let resultExpectation = expectation(description: "result block must be called.")
-    plugin.handle(call) { result in
-      XCTAssertEqual(result as! String, "iOS " + UIDevice.current.systemVersion)
-      resultExpectation.fulfill()
-    }
-    waitForExpectations(timeout: 1)
+  func testAdapterStateBeforeTheManagerExistsNeverPrompts() {
+    XCTAssertEqual(
+      StateMapping.adapterState(managerState: nil, authorization: .notDetermined), .unknown)
+    XCTAssertEqual(
+      StateMapping.adapterState(managerState: nil, authorization: .denied), .unauthorized)
+    XCTAssertEqual(
+      StateMapping.adapterState(managerState: nil, authorization: .restricted), .unauthorized)
+    XCTAssertEqual(
+      StateMapping.adapterState(managerState: nil, authorization: .allowedAlways), .unknown)
   }
 
+  func testAdapterStateFromTheManager() {
+    let cases: [(CBManagerState, AdapterState)] = [
+      (.poweredOn, .poweredOn), (.poweredOff, .poweredOff), (.unauthorized, .unauthorized),
+      (.unsupported, .unsupported), (.unknown, .unknown), (.resetting, .unknown),
+    ]
+    for (managerState, expected) in cases {
+      XCTAssertEqual(
+        StateMapping.adapterState(managerState: managerState, authorization: .allowedAlways),
+        expected)
+    }
+  }
+
+  func testPermissionResults() {
+    XCTAssertEqual(StateMapping.permissionResult(.allowedAlways), .granted)
+    XCTAssertEqual(StateMapping.permissionResult(.notDetermined), .denied)
+    XCTAssertEqual(StateMapping.permissionResult(.denied), .permanentlyDenied)
+    XCTAssertEqual(StateMapping.permissionResult(.restricted), .permanentlyDenied)
+  }
+
+  func testDataVariantPrefersFFF0() {
+    let both = StateMapping.dataVariant(
+      in: [CBUUID(string: "180A"), CBUUID(string: "FF00"), CBUUID(string: "FFF0")])
+    XCTAssertEqual(both?.notify, CBUUID(string: "FFF1"))
+    XCTAssertEqual(both?.write, CBUUID(string: "FFF2"))
+
+    let alternative = StateMapping.dataVariant(in: [CBUUID(string: "FF00")])
+    XCTAssertEqual(alternative?.notify, CBUUID(string: "FF01"))
+
+    XCTAssertNil(StateMapping.dataVariant(in: [CBUUID(string: "180A")]))
+  }
 }
