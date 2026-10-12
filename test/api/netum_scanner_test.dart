@@ -39,6 +39,16 @@ void main() {
       expect(netum.knownDevices, [a]);
     });
 
+    test('connect() keeps the name for display', () async {
+      final device = await netum.connect(
+        _id1,
+        transport: NetumTransport.ble,
+        name: 'Netum-01',
+      );
+
+      expect(device.name, 'Netum-01');
+    });
+
     test('device() rejects the same id with another transport', () {
       netum.device(_id1, transport: NetumTransport.ble);
 

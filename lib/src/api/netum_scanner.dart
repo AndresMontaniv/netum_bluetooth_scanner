@@ -240,13 +240,17 @@ class NetumScanner implements DeviceHost {
     return device;
   }
 
-  /// Shortcut for `device(id, transport: transport).connect(...)`.
+  /// Shortcut for `device(id, transport: transport, name: name).connect()`.
+  ///
+  /// [name] is for display only: several scanners can share a name, so the
+  /// [id] is what identifies a device.
   Future<NetumDevice> connect(
     String id, {
     required NetumTransport transport,
+    String? name,
     Duration timeout = const Duration(seconds: 15),
   }) async {
-    final handle = device(id, transport: transport);
+    final handle = device(id, transport: transport, name: name);
     await handle.connect(timeout: timeout);
     return handle;
   }

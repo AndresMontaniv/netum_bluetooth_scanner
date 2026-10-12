@@ -99,13 +99,11 @@ class _DiscoverPageState extends State<DiscoverPage> {
                   trailing: TextButton(
                     onPressed: () => widget.state.run(
                       'connect ${scanner.name ?? scanner.id}',
-                      () => _netum
-                          .device(
-                            scanner.id,
-                            transport: scanner.transport,
-                            name: scanner.name,
-                          )
-                          .connect(),
+                      () => _netum.connect(
+                        scanner.id,
+                        transport: scanner.transport,
+                        name: scanner.name,
+                      ),
                     ),
                     child: const Text('Connect'),
                   ),
