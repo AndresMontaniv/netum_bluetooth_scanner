@@ -18,10 +18,18 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code: share launch configs and extension recommendations; settings.json is per-machine
+# (FVM writes a local dart.flutterSdkPath into it).
+.vscode/*
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# FVM: .fvmrc (the version pin) is committed; .fvm/ is the local SDK link/cache.
+.fvm/
+
+# Claude Code: personal settings and machine-specific notes.
+.claude/settings.local.json
+CLAUDE.local.md
 
 # Flutter/Dart/Pub related
 # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.

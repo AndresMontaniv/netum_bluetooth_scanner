@@ -1,0 +1,15 @@
+# Normalize line endings so Windows checkouts don't introduce CRLF.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jar binary
+
+# Pigeon output (regenerate with `dart run pigeon --input pigeons/netum_api.dart`).
+# Collapsed in GitHub diffs.
+*.g.dart linguist-generated=true
+*.g.kt linguist-generated=true
+*.g.swift linguist-generated=true

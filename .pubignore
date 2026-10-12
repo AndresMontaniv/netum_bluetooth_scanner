@@ -1,0 +1,36 @@
+# A .pubignore replaces .gitignore for `pub publish` in this folder, so the
+# root .gitignore rules are repeated here. Keep both files in sync.
+
+# --- Mirrors .gitignore ---
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+.fvm/
+.claude/
+CLAUDE.local.md
+/pubspec.lock
+**/doc/api/
+.dart_tool/
+.flutter-plugins-dependencies
+/build/
+/coverage/
+
+# --- Repo-only files, not shipped to pub.dev ---
+CLAUDE.md
+.tool-versions
+.fvmrc
+.gitattributes
