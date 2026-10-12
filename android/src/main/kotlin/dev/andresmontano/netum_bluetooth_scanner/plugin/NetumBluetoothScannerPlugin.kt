@@ -5,6 +5,7 @@ import dev.andresmontano.netum_bluetooth_scanner.core.LinkEvent
 import dev.andresmontano.netum_bluetooth_scanner.core.NetumError
 import dev.andresmontano.netum_bluetooth_scanner.core.NetumEvents
 import dev.andresmontano.netum_bluetooth_scanner.core.NetumManager
+import dev.andresmontano.netum_bluetooth_scanner.core.ble.BleUuids
 import dev.andresmontano.netum_bluetooth_scanner.generated.ActiveLinkMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.AdapterStateMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.AdapterStatesStreamHandler
@@ -181,7 +182,9 @@ class NetumBluetoothScannerPlugin :
 
     override fun bondedDevices(): List<DiscoveredDeviceMsg> = unimplemented("bondedDevices")
 
-    override suspend fun connect(id: String, options: ConnectOptionsMsg) = unimplemented("connect")
+    override suspend fun connect(id: String, options: ConnectOptionsMsg) = bridge {
+        manager.connect(id, options.transport.toCore(), options.timeoutMs)
+    }
 
     override suspend fun disconnect(id: String) = bridge {
         val link = manager.link(id) ?: throw NetumError(NetumError.NOT_CONNECTED, "$id is not connected")
@@ -199,9 +202,11 @@ class NetumBluetoothScannerPlugin :
         id: String,
         serviceUuid: String,
         characteristicUuid: String,
-    ): ByteArray = unimplemented("readCharacteristic")
+    ): ByteArray = bridge {
+        manager.bleLink(id).readCharacteristic(BleUuids.parse(serviceUuid), BleUuids.parse(characteristicUuid))
+    }
 
-    override suspend fun readRssi(id: String): Long = unimplemented("readRssi")
+    override suspend fun readRssi(id: String): Long = bridge { manager.bleLink(id).readRssi().toLong() }
 
     override fun startSppListener(timeoutMs: Long) = unimplemented("startSppListener")
 

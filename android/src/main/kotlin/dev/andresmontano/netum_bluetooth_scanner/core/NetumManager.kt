@@ -1,9 +1,11 @@
 package dev.andresmontano.netum_bluetooth_scanner.core
 
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.AdapterMonitor
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.PermissionScope
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.Permissions
+import dev.andresmontano.netum_bluetooth_scanner.core.ble.BleLink
 import dev.andresmontano.netum_bluetooth_scanner.core.ble.BleScanner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +51,40 @@ class NetumManager private constructor(context: Context) {
 
     fun stopDiscovery() {
         bleScanner?.stop()
+    }
+
+    /** Connects [id]; returns once the link is ready for data. Idempotent while connected. */
+    suspend fun connect(id: String, transport: Transport, timeoutMs: Long) {
+        if (transport == Transport.SPP) {
+            throw NetumError(NetumError.UNIMPLEMENTED, "SPP connections arrive in S5")
+        }
+        val adapter = adapterMonitor.adapter
+            ?: throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "No Bluetooth adapter")
+        if (!adapterMonitor.isPoweredOn) {
+            throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "Bluetooth is off")
+        }
+        permissions.ensure(PermissionScope.CONNECTION)
+        if (!BluetoothAdapter.checkBluetoothAddress(id)) {
+            throw NetumError(NetumError.INVALID_ARGUMENT, "Not a Bluetooth address: $id")
+        }
+        links[id]?.let {
+            if (it.state == LinkState.CONNECTED) return
+            throw NetumError(NetumError.BUSY, "$id is already connecting")
+        }
+
+        val link = BleLink(this, adapter.getRemoteDevice(id))
+        register(link)
+        try {
+            link.connect(timeoutMs)
+        } catch (e: Exception) {
+            unregister(link)
+            throw e
+        }
+    }
+
+    fun bleLink(id: String): BleLink {
+        val link = links[id] ?: throw NetumError(NetumError.NOT_CONNECTED, "$id is not connected")
+        return link as? BleLink ?: throw NetumError(NetumError.UNSUPPORTED, "$id is not a BLE link")
     }
 
     fun link(id: String): Link? = links[id]
