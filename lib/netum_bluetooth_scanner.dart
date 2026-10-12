@@ -1,8 +1,3 @@
-
-import 'netum_bluetooth_scanner_platform_interface.dart';
-
-class NetumBluetoothScanner {
-  Future<String?> getPlatformVersion() {
-    return NetumBluetoothScannerPlatform.instance.getPlatformVersion();
-  }
-}
+/// Flutter plugin for NETUM Bluetooth barcode scanners: BLE on Android and
+/// iOS, SPP (Classic Bluetooth) on Android.
+library;

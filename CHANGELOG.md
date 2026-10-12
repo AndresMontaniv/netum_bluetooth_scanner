@@ -1,3 +1,3 @@
-## 0.0.1
+## 0.0.1-dev
 
-* TODO: Describe initial release.
+* Project scaffold: package metadata, MIT license, lints, protocol docs in `doc/`. No public API yet.
