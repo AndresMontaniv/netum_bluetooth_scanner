@@ -2,6 +2,7 @@ package dev.andresmontano.netum_bluetooth_scanner.core
 
 import android.content.Context
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.AdapterMonitor
+import dev.andresmontano.netum_bluetooth_scanner.core.adapter.Permissions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,6 +15,7 @@ class NetumManager private constructor(context: Context) {
     val context: Context = context.applicationContext
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     val adapterMonitor = AdapterMonitor(this.context)
+    val permissions = Permissions(this.context)
 
     /** The attached Flutter side, if any. Events are dropped while detached. */
     var events: NetumEvents? = null

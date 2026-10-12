@@ -21,15 +21,25 @@ import dev.andresmontano.netum_bluetooth_scanner.generated.PermissionResultMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.PermissionScopeMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.PigeonEventSink
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.BinaryMessenger
 
 /**
  * Pigeon host implementation. Delegates to the app-scoped [NetumManager]; links outlive the
  * engine, so detaching only drops the event sinks.
  */
-class NetumBluetoothScannerPlugin : FlutterPlugin, NetumHostApi, NetumEvents {
+class NetumBluetoothScannerPlugin :
+    FlutterPlugin,
+    ActivityAware,
+    NetumHostApi,
+    NetumEvents,
+    PluginRegistry.RequestPermissionsResultListener,
+    PluginRegistry.ActivityResultListener {
     private var messenger: BinaryMessenger? = null
     private lateinit var manager: NetumManager
+    private var activityBinding: ActivityPluginBinding? = null
 
     // One sink per stream. A new listen (e.g. after a Dart hot restart) replaces the old sink.
     private var discoveriesSink: PigeonEventSink<DiscoveredDeviceMsg>? = null
@@ -83,6 +93,38 @@ class NetumBluetoothScannerPlugin : FlutterPlugin, NetumHostApi, NetumEvents {
         dataSink = null
     }
 
+    // region ActivityAware
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activityBinding = binding
+        manager.permissions.activity = binding.activity
+        binding.addRequestPermissionsResultListener(this)
+        binding.addActivityResultListener(this)
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() = onDetachedFromActivity()
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) =
+        onAttachedToActivity(binding)
+
+    override fun onDetachedFromActivity() {
+        activityBinding?.removeRequestPermissionsResultListener(this)
+        activityBinding?.removeActivityResultListener(this)
+        activityBinding = null
+        manager.permissions.onActivityDetached()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ): Boolean = manager.permissions.onRequestPermissionsResult(requestCode)
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?): Boolean =
+        manager.permissions.onActivityResult(requestCode, resultCode)
+
+    // endregion
+
     // region NetumEvents (main thread)
 
     override fun onDiscovery(device: DiscoveredDevice) {
@@ -120,12 +162,15 @@ class NetumBluetoothScannerPlugin : FlutterPlugin, NetumHostApi, NetumEvents {
     override fun adapterState(): AdapterStateMsg = manager.adapterMonitor.state.toMsg()
 
     override fun checkPermissions(scope: PermissionScopeMsg): PermissionResultMsg =
-        unimplemented("checkPermissions")
+        manager.permissions.check(scope.toCore()).toMsg()
 
-    override suspend fun requestPermissions(scope: PermissionScopeMsg): PermissionResultMsg =
-        unimplemented("requestPermissions")
+    override suspend fun requestPermissions(scope: PermissionScopeMsg): PermissionResultMsg = bridge {
+        manager.permissions.request(scope.toCore()).toMsg()
+    }
 
-    override suspend fun requestEnableBluetooth(): Boolean = unimplemented("requestEnableBluetooth")
+    override suspend fun requestEnableBluetooth(): Boolean = bridge {
+        manager.permissions.requestEnableBluetooth { manager.adapterMonitor.isPoweredOn }
+    }
 
     override fun startDiscovery(options: DiscoveryOptionsMsg) = unimplemented("startDiscovery")
 

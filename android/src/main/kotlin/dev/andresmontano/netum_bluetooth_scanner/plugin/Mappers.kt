@@ -7,12 +7,16 @@ import dev.andresmontano.netum_bluetooth_scanner.core.LinkState
 import dev.andresmontano.netum_bluetooth_scanner.core.NetumError
 import dev.andresmontano.netum_bluetooth_scanner.core.Transport
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.AdapterState
+import dev.andresmontano.netum_bluetooth_scanner.core.adapter.PermissionResult
+import dev.andresmontano.netum_bluetooth_scanner.core.adapter.PermissionScope
 import dev.andresmontano.netum_bluetooth_scanner.generated.ActiveLinkMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.AdapterStateMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.DiscoveredDeviceMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.FlutterError
 import dev.andresmontano.netum_bluetooth_scanner.generated.LinkStateMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.LinkStateMsgEvent
+import dev.andresmontano.netum_bluetooth_scanner.generated.PermissionResultMsg
+import dev.andresmontano.netum_bluetooth_scanner.generated.PermissionScopeMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.TransportMsg
 
 internal fun Transport.toMsg() = when (this) {
@@ -57,6 +61,18 @@ internal fun AdapterState.toMsg(): AdapterStateMsg = when (this) {
     AdapterState.POWERED_OFF -> AdapterStateMsg.POWERED_OFF
     AdapterState.POWERED_ON -> AdapterStateMsg.POWERED_ON
     AdapterState.LOCATION_SERVICES_OFF -> AdapterStateMsg.LOCATION_SERVICES_OFF
+}
+
+internal fun PermissionScopeMsg.toCore() = when (this) {
+    PermissionScopeMsg.DISCOVERY -> PermissionScope.DISCOVERY
+    PermissionScopeMsg.CONNECTION -> PermissionScope.CONNECTION
+}
+
+internal fun PermissionResult.toMsg() = when (this) {
+    PermissionResult.GRANTED -> PermissionResultMsg.GRANTED
+    PermissionResult.DENIED -> PermissionResultMsg.DENIED
+    PermissionResult.PERMANENTLY_DENIED -> PermissionResultMsg.PERMANENTLY_DENIED
+    PermissionResult.NOT_REQUIRED -> PermissionResultMsg.NOT_REQUIRED
 }
 
 internal fun NetumError.toFlutterError() = FlutterError(code, message, details)
