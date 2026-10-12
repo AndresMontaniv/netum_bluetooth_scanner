@@ -88,6 +88,7 @@ class NetumBluetoothScannerPlugin :
         messenger = null
         if (manager.events === this) manager.events = null
         manager.adapterMonitor.stop()
+        manager.stopDiscovery()
         discoveriesSink = null
         linkStatesSink = null
         dataSink = null
@@ -172,9 +173,11 @@ class NetumBluetoothScannerPlugin :
         manager.permissions.requestEnableBluetooth { manager.adapterMonitor.isPoweredOn }
     }
 
-    override fun startDiscovery(options: DiscoveryOptionsMsg) = unimplemented("startDiscovery")
+    override fun startDiscovery(options: DiscoveryOptionsMsg) = bridge {
+        manager.startDiscovery(options.transport.toCore(), options.filterNetum, options.timeoutMs)
+    }
 
-    override fun stopDiscovery() = unimplemented("stopDiscovery")
+    override fun stopDiscovery() = manager.stopDiscovery()
 
     override fun bondedDevices(): List<DiscoveredDeviceMsg> = unimplemented("bondedDevices")
 

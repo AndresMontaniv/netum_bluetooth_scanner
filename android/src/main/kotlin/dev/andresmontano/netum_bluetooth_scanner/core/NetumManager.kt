@@ -2,7 +2,9 @@ package dev.andresmontano.netum_bluetooth_scanner.core
 
 import android.content.Context
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.AdapterMonitor
+import dev.andresmontano.netum_bluetooth_scanner.core.adapter.PermissionScope
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.Permissions
+import dev.andresmontano.netum_bluetooth_scanner.core.ble.BleScanner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,6 +23,33 @@ class NetumManager private constructor(context: Context) {
     var events: NetumEvents? = null
 
     private val links = LinkedHashMap<String, Link>()
+    private var bleScanner: BleScanner? = null
+
+    val isDiscovering: Boolean
+        get() = bleScanner?.isScanning == true
+
+    /** Starts BLE discovery; results and failures arrive through [events]. */
+    fun startDiscovery(transport: Transport, filterNetum: Boolean, timeoutMs: Long) {
+        if (transport == Transport.SPP) {
+            throw NetumError(NetumError.UNIMPLEMENTED, "SPP discovery arrives in S5")
+        }
+        val adapter = adapterMonitor.adapter
+            ?: throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "No Bluetooth adapter")
+        if (!adapterMonitor.isPoweredOn) {
+            throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "Bluetooth is off")
+        }
+        permissions.ensure(PermissionScope.DISCOVERY)
+        if (AdapterMonitor.LOCATION_BLOCKS_DISCOVERY && !adapterMonitor.isLocationEnabled) {
+            throw NetumError(NetumError.LOCATION_OFF, "Location services are off")
+        }
+        val scanner = bleScanner ?: BleScanner(adapter, scope, ::emitDiscovery, ::emitDiscoveryError)
+            .also { bleScanner = it }
+        scanner.start(filterNetum, timeoutMs)
+    }
+
+    fun stopDiscovery() {
+        bleScanner?.stop()
+    }
 
     fun link(id: String): Link? = links[id]
 
