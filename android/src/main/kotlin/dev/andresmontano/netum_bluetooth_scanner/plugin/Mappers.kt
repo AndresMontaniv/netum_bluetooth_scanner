@@ -56,6 +56,7 @@ internal fun AdapterState.toMsg(): AdapterStateMsg = when (this) {
     AdapterState.UNSUPPORTED -> AdapterStateMsg.UNSUPPORTED
     AdapterState.POWERED_OFF -> AdapterStateMsg.POWERED_OFF
     AdapterState.POWERED_ON -> AdapterStateMsg.POWERED_ON
+    AdapterState.LOCATION_SERVICES_OFF -> AdapterStateMsg.LOCATION_SERVICES_OFF
 }
 
 internal fun NetumError.toFlutterError() = FlutterError(code, message, details)
