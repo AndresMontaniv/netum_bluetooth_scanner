@@ -99,18 +99,30 @@ class NetumScanner implements DeviceHost {
 
   // region Environment
 
-  /// Adapter state changes. Broadcast; emits the current state on listen.
-  Stream<AdapterState> get adapterState {
-    unawaited(initialize());
-    return Stream.multi((controller) {
-      controller.add(_adapterState);
-      final subscription = _adapterStates.stream.listen(
-        controller.add,
-        onError: controller.addError,
-      );
-      controller.onCancel = subscription.cancel;
-    }, isBroadcast: true);
-  }
+  /// Adapter state changes. Broadcast; emits the current state on listen
+  /// (once the native side has reported it), then every change.
+  Stream<AdapterState> get adapterState => Stream.multi((controller) {
+    AdapterState? last;
+    void emit(AdapterState state) {
+      if (state == last || controller.isClosed) return;
+      last = state;
+      controller.add(state);
+    }
+
+    final subscription = _adapterStates.stream.listen(
+      emit,
+      onError: controller.addError,
+    );
+    controller.onCancel = subscription.cancel;
+    unawaited(
+      initialize().then(
+        (_) => emit(_adapterState),
+        onError: (Object error, StackTrace stackTrace) {
+          if (!controller.isClosed) controller.addError(error, stackTrace);
+        },
+      ),
+    );
+  }, isBroadcast: true);
 
   /// The last known adapter state.
   @override
@@ -355,6 +367,10 @@ class _Discovery {
 
   void report(DiscoveredDeviceMsg found) {
     if (_ended) return;
+    final likelyNetum = _advertisesNetum(found.serviceUuids);
+    // The native filter already applies, but a result from the previous
+    // (unfiltered) scan can still be in flight when this one starts.
+    if (filter == DiscoveryFilter.likelyNetum && !likelyNetum) return;
     final previous = _seen[found.id];
     final scanner = DiscoveredScanner(
       id: found.id,
@@ -362,9 +378,7 @@ class _Discovery {
       name: found.name ?? previous?.name,
       rssi: found.rssi,
       bonded: found.bonded,
-      likelyNetum:
-          filter == DiscoveryFilter.likelyNetum ||
-          _advertisesNetum(found.serviceUuids),
+      likelyNetum: likelyNetum,
       serviceUuids: found.serviceUuids,
       lastSeen: DateTime.now(),
     );

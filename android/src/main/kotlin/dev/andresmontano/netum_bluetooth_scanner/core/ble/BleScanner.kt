@@ -82,12 +82,18 @@ class BleScanner(
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .build()
+        // Results from a scan that was already stopped (or replaced) are dropped.
         val newCallback = object : ScanCallback() {
-            override fun onScanResult(callbackType: Int, result: ScanResult) = report(result)
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                if (callback === this) report(result)
+            }
 
-            override fun onBatchScanResults(results: MutableList<ScanResult>) = results.forEach(::report)
+            override fun onBatchScanResults(results: MutableList<ScanResult>) {
+                if (callback === this) results.forEach(::report)
+            }
 
             override fun onScanFailed(errorCode: Int) {
+                if (callback !== this) return
                 callback = null
                 onError(NetumError(NetumError.DISCOVERY_FAILED, "BLE scan failed ($errorCode)", errorCode))
             }

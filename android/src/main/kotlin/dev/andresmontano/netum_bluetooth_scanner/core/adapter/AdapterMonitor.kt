@@ -88,10 +88,11 @@ class AdapterMonitor(private val context: Context) {
 
     companion object {
         /**
-         * Whether Location services must be on for BLE discovery to return results. Certain up to
-         * Android 11 (API 30). For Android 12+ (no `neverForLocation`) this is settled by
-         * hardware test H2.2.
+         * Whether Location services must be on for BLE discovery to return results. True on every
+         * version without `neverForLocation` (which would hide the scanners): hardware test H2.2
+         * found 0 scanners on Android 16 with Location off, all 3 with it on. Connecting and
+         * receiving scans work with Location off.
          */
-        val LOCATION_BLOCKS_DISCOVERY: Boolean = Build.VERSION.SDK_INT <= Build.VERSION_CODES.R
+        const val LOCATION_BLOCKS_DISCOVERY: Boolean = true
     }
 }

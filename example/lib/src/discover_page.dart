@@ -98,11 +98,14 @@ class _DiscoverPageState extends State<DiscoverPage> {
                   subtitle: Text('${scanner.id} · ${scanner.rssi} dBm'),
                   trailing: TextButton(
                     onPressed: () => widget.state.run(
-                      'connect ${scanner.id}',
-                      () => _netum.connect(
-                        scanner.id,
-                        transport: scanner.transport,
-                      ),
+                      'connect ${scanner.name ?? scanner.id}',
+                      () => _netum
+                          .device(
+                            scanner.id,
+                            transport: scanner.transport,
+                            name: scanner.name,
+                          )
+                          .connect(),
                     ),
                     child: const Text('Connect'),
                   ),

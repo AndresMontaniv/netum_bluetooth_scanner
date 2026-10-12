@@ -335,6 +335,19 @@ void main() {
       expect(transport.discoveryStarts.single.filterNetum, isTrue);
     });
 
+    test('filtered discovery drops non-NETUM results in flight', () async {
+      final found = <DiscoveredScanner>[];
+      netum.discover().listen(found.add);
+      await pumpEventQueue();
+
+      transport
+        ..found('34:89:0E:C0:E5:B5', uuids: [])
+        ..found(_id1);
+      await pumpEventQueue();
+
+      expect(found.map((d) => d.id), [_id1]);
+    });
+
     test('computes likelyNetum for unfiltered results', () async {
       final found = <DiscoveredScanner>[];
       netum.discover(filter: DiscoveryFilter.all).listen(found.add);
@@ -418,6 +431,14 @@ void main() {
         expect(netum.currentAdapterState, AdapterState.poweredOff);
       },
     );
+
+    test('adapterState does not emit unknown before initialization', () async {
+      final states = <AdapterState>[];
+      netum.adapterState.listen(states.add);
+      await pumpEventQueue();
+
+      expect(states, [AdapterState.poweredOn]);
+    });
 
     test('permissions map to the public enums', () async {
       expect(await netum.checkPermissions(), PermissionStatus.denied);
