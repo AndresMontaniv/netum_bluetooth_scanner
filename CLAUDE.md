@@ -9,7 +9,7 @@
 - Architecture rules: protocol lives in Dart (`lib/src/protocol`, `lib/src/session`); native code only moves bytes.
   `android/.../core` must not import io.flutter. One in-flight command per device. Never use `neverForLocation`.
 - Generated code (`pigeons/` → `*.g.dart`, `NetumApi.g.kt`, `NetumApi.g.swift`): regenerate with
-  `dart run pigeon --input pigeons/netum_api.dart`, never hand-edit.
+  `dart run pigeon --input pigeons/netum_api.dart && dart format lib/src/generated`, never hand-edit.
 - iOS CocoaPods check (SwiftPM is the default): the example's Xcode project references the plugin as a local package
   (`../../ios/netum_bluetooth_scanner`), which breaks resolution with SwiftPM off. Delete that reference's two lines from
   `project.pbxproj`, `flutter config --no-enable-swift-package-manager`, build/run, then re-enable SwiftPM, `git checkout`
