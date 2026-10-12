@@ -138,7 +138,7 @@ final class BleLink: NSObject, CBPeripheralDelegate {
 
   func handleBluetoothUnavailable() {
     if connectCompletion != nil {
-      failConnect(.bluetoothUnavailable("Bluetooth turned off"))
+      failConnect(.bluetoothUnavailable("Bluetooth turned off", state: "poweredOff"))
     } else {
       close(userInitiated: false, platformCode: nil)
     }

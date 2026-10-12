@@ -71,7 +71,7 @@ class BleScanner(
 
     private fun startNow(filterNetum: Boolean) {
         val scanner = adapter.bluetoothLeScanner ?: run {
-            onError(NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "Bluetooth is off"))
+            onError(NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "Bluetooth is off", "poweredOff"))
             return
         }
         val filters = if (filterNetum) {

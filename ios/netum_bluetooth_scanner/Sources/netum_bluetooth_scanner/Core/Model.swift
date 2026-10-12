@@ -45,8 +45,9 @@ struct NetumError: Error {
   static let permissionDenied = NetumError(
     code: "permission-denied", message: "Bluetooth permission denied", details: ["bluetooth"])
 
-  static func bluetoothUnavailable(_ message: String) -> NetumError {
-    NetumError(code: "bluetooth-unavailable", message: message)
+  /// [state] is the adapter state's Dart name, e.g. `poweredOff`.
+  static func bluetoothUnavailable(_ message: String, state: String) -> NetumError {
+    NetumError(code: "bluetooth-unavailable", message: message, details: state)
   }
 
   static func unsupported(_ message: String) -> NetumError {

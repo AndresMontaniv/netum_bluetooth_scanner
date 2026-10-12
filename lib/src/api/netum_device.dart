@@ -88,7 +88,8 @@ class NetumDevice {
   /// Connects and enables notifications. Completes once the device is ready
   /// for data; does nothing if already connected.
   ///
-  /// Throws [NetumDeviceBusy] while already connecting,
+  /// Fails fast while Bluetooth is off or unauthorized. Throws
+  /// [NetumDeviceBusy] while already connecting,
   /// [NetumMaxConnectionsReached], [NetumPermissionDenied],
   /// [NetumBluetoothUnavailable] or [NetumConnectionFailed].
   Future<void> connect({
@@ -96,6 +97,18 @@ class NetumDevice {
   }) async {
     await _host.initialize();
     if (_state == NetumConnectionState.connected) return;
+    switch (_host.currentAdapterState) {
+      case AdapterState.poweredOff:
+      case AdapterState.unsupported:
+        throw NetumBluetoothUnavailable(_host.currentAdapterState);
+      case AdapterState.unauthorized:
+        throw NetumPermissionDenied(const ['bluetooth']);
+      case AdapterState.unknown:
+      case AdapterState.poweredOn:
+      // Connecting works with Location services off.
+      case AdapterState.locationServicesOff:
+        break;
+    }
     if (_state == NetumConnectionState.connecting) {
       throw const NetumDeviceBusy();
     }

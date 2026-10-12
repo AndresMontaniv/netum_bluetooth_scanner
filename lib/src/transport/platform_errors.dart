@@ -17,7 +17,9 @@ NetumException mapPlatformException(PlatformException error) {
       if (details is List)
         for (final permission in details) '$permission',
     ]),
-    'bluetooth-unavailable' => NetumBluetoothUnavailable(AdapterState.unknown),
+    'bluetooth-unavailable' => NetumBluetoothUnavailable(
+      AdapterState.values.asNameMap()[details] ?? AdapterState.unknown,
+    ),
     'location-off' => const NetumLocationServicesOff(),
     'unsupported' || 'unimplemented' => NetumUnsupportedTransport(message),
     'busy' => const NetumDeviceBusy(),

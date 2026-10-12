@@ -204,8 +204,8 @@ final class NetumManager: NSObject, CBCentralManagerDelegate {
     default: break
     }
     switch central?.state {
-    case .poweredOff: return .bluetoothUnavailable("Bluetooth is off")
-    case .unsupported: return .bluetoothUnavailable("Bluetooth is not supported")
+    case .poweredOff: return .bluetoothUnavailable("Bluetooth is off", state: "poweredOff")
+    case .unsupported: return .bluetoothUnavailable("Bluetooth is not supported", state: "unsupported")
     default: return nil
     }
   }
@@ -218,8 +218,8 @@ final class NetumManager: NSObject, CBCentralManagerDelegate {
       switch state {
       case .poweredOn: completion(.success(central))
       case .unauthorized: completion(.failure(.permissionDenied))
-      case .unsupported: completion(.failure(.bluetoothUnavailable("Bluetooth is not supported")))
-      default: completion(.failure(.bluetoothUnavailable("Bluetooth is off")))
+      case .unsupported: completion(.failure(.bluetoothUnavailable("Bluetooth is not supported", state: "unsupported")))
+      default: completion(.failure(.bluetoothUnavailable("Bluetooth is off", state: "poweredOff")))
       }
     }
   }

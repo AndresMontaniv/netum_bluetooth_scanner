@@ -20,6 +20,13 @@ void main() {
     expect(map('invalid-argument'), isA<NetumInvalidArgument>());
   });
 
+  test('bluetooth-unavailable carries the adapter state', () {
+    final error = map('bluetooth-unavailable', details: 'poweredOff');
+    expect((error as NetumBluetoothUnavailable).state, AdapterState.poweredOff);
+    final unknown = map('bluetooth-unavailable');
+    expect((unknown as NetumBluetoothUnavailable).state, AdapterState.unknown);
+  });
+
   test('connection-failed keeps the platform status', () {
     final error = map('connection-failed', details: 133);
     expect((error as NetumConnectionFailed).platformCode, 133);

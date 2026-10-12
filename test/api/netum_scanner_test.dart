@@ -130,6 +130,26 @@ void main() {
       await completer.future;
     });
 
+    test('fails fast while Bluetooth is off, without a state change', () async {
+      transport.currentAdapterState = AdapterStateMsg.poweredOff;
+      final device = netum.device(_id1, transport: NetumTransport.ble);
+      final states = <NetumConnectionState>[];
+      device.stateChanges.listen(states.add);
+
+      await expectLater(
+        device.connect(),
+        throwsA(
+          isA<NetumBluetoothUnavailable>().having(
+            (e) => e.state,
+            'state',
+            AdapterState.poweredOff,
+          ),
+        ),
+      );
+      expect(transport.connects, isEmpty);
+      expect(states, isEmpty);
+    });
+
     test('maxConnections is enforced', () async {
       netum.maxConnections = 1;
       await connected(_id1);

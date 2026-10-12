@@ -36,9 +36,9 @@ class NetumManager private constructor(context: Context) {
             throw NetumError(NetumError.UNIMPLEMENTED, "SPP discovery arrives in S5")
         }
         val adapter = adapterMonitor.adapter
-            ?: throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "No Bluetooth adapter")
+            ?: throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "No Bluetooth adapter", "unsupported")
         if (!adapterMonitor.isPoweredOn) {
-            throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "Bluetooth is off")
+            throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "Bluetooth is off", "poweredOff")
         }
         permissions.ensure(PermissionScope.DISCOVERY)
         if (AdapterMonitor.LOCATION_BLOCKS_DISCOVERY && !adapterMonitor.isLocationEnabled) {
@@ -59,9 +59,9 @@ class NetumManager private constructor(context: Context) {
             throw NetumError(NetumError.UNIMPLEMENTED, "SPP connections arrive in S5")
         }
         val adapter = adapterMonitor.adapter
-            ?: throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "No Bluetooth adapter")
+            ?: throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "No Bluetooth adapter", "unsupported")
         if (!adapterMonitor.isPoweredOn) {
-            throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "Bluetooth is off")
+            throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "Bluetooth is off", "poweredOff")
         }
         permissions.ensure(PermissionScope.CONNECTION)
         if (!BluetoothAdapter.checkBluetoothAddress(id)) {
