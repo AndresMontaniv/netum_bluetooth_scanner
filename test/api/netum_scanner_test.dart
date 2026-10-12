@@ -322,6 +322,20 @@ void main() {
       await expectLater(device.readRssi(), throwsA(isA<NetumNotConnected>()));
     });
 
+    test('getDeviceInfo reads 180A and derives the Classic MAC', () async {
+      final device = await connected(_id1);
+
+      final info = await device.getDeviceInfo();
+
+      expect(info.manufacturer, 'Feasycom');
+      expect(info.model, 'FSC-BT825');
+      expect(info.serial, 'DC0D3060B42C');
+      expect(info.classicAddress, 'DC:0D:30:60:B4:2C');
+      expect(info.hardwareRevision, '1.1');
+      // No 2A26 on the DS5000: falls back to the software revision.
+      expect(info.firmwareRevision, '1.6.2');
+    });
+
     test('readRssi', () async {
       final device = await connected(_id1);
       expect(await device.readRssi(), -48);

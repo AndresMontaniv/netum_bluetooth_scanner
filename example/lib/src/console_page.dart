@@ -99,6 +99,11 @@ class _ConsolePageState extends State<ConsolePage> {
             onPressed: () => _state.run('$name readRssi', device.readRssi),
             child: const Text('RSSI'),
           ),
+          OutlinedButton(
+            onPressed: () =>
+                _state.run('$name getDeviceInfo', device.getDeviceInfo),
+            child: const Text('Info'),
+          ),
         ],
       ),
       Row(

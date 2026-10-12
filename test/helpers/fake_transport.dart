@@ -117,6 +117,28 @@ class FakeTransport extends Fake implements NetumTransportApi {
   @override
   Future<int> readRssi(String id) async => -48;
 
+  /// Device Information values by characteristic; missing ones throw.
+  Map<String, String> deviceInformation = {
+    '2A29': 'Feasycom',
+    '2A24': 'FSC-BT825',
+    '2A25': 'DC0D3060B42C',
+    '2A27': '1.1',
+    '2A28': '1.6.2',
+  };
+
+  @override
+  Future<Uint8List> readCharacteristic(
+    String id,
+    String serviceUuid,
+    String characteristicUuid,
+  ) async {
+    final value = deviceInformation[characteristicUuid];
+    if (value == null) {
+      throw const NetumInvalidArgument('No such characteristic');
+    }
+    return Uint8List.fromList(value.codeUnits);
+  }
+
   @override
   Future<void> startDiscovery(DiscoveryOptionsMsg options) async {
     discoveryStarts.add(options);

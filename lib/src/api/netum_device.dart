@@ -169,6 +169,44 @@ class NetumDevice {
     return result.reply ?? (throw NetumUnexpectedReply(''));
   }
 
+  /// Reads the scanner's identity from its Device Information Service
+  /// (BLE). Fields the scanner does not expose are `null`.
+  Future<DeviceInfo> getDeviceInfo() async {
+    _ensureConnected();
+    Future<String?> read(String characteristic) async {
+      try {
+        final bytes = await _host.transport.readCharacteristic(
+          id,
+          '180A',
+          characteristic,
+        );
+        final text = String.fromCharCodes(bytes.where((b) => b != 0)).trim();
+        return text.isEmpty ? null : text;
+      } on NetumNotConnected {
+        rethrow;
+      } on NetumException {
+        return null;
+      }
+    }
+
+    final manufacturer = await read('2A29');
+    final model = await read('2A24');
+    final serial = await read('2A25');
+    final hardware = await read('2A27');
+    final firmware = await read('2A26') ?? await read('2A28');
+    final mac = serial != null && RegExp(r'^[0-9A-F]{12}$').hasMatch(serial)
+        ? [for (var i = 0; i < 12; i += 2) serial.substring(i, i + 2)].join(':')
+        : null;
+    return DeviceInfo(
+      manufacturer: manufacturer,
+      model: model,
+      serial: serial,
+      hardwareRevision: hardware,
+      firmwareRevision: firmware,
+      classicAddress: mac,
+    );
+  }
+
   /// Sends a catalog or custom [command], framed. Commands run one at a time
   /// per device. Throws [NetumNotConnected] or [NetumCommandTimeout].
   Future<CommandResult> send(NetumCommand command) => _send(command);

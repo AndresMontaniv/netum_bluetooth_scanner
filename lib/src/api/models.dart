@@ -287,3 +287,42 @@ final class ExpectedAfterCommand extends DisconnectReason {
   @override
   String toString() => 'ExpectedAfterCommand(${command.ascii})';
 }
+
+/// Identity read from the scanner's Device Information Service (BLE, no
+/// scanner command needed).
+@immutable
+class DeviceInfo {
+  /// Creates device information.
+  const DeviceInfo({
+    this.manufacturer,
+    this.model,
+    this.serial,
+    this.hardwareRevision,
+    this.firmwareRevision,
+    this.classicAddress,
+  });
+
+  /// Manufacturer name, e.g. `Feasycom` (the Bluetooth module's maker).
+  final String? manufacturer;
+
+  /// Model, e.g. `FSC-BT825`.
+  final String? model;
+
+  /// Serial number. On the DS5000 this is the Classic Bluetooth MAC.
+  final String? serial;
+
+  /// Hardware revision, e.g. `1.1`.
+  final String? hardwareRevision;
+
+  /// Firmware (software) revision of the Bluetooth module, e.g. `1.6.2`.
+  final String? firmwareRevision;
+
+  /// The Classic Bluetooth MAC (`DC:0D:30:…`), when the serial is one. It is
+  /// the same in BLE and SPP mode, and visible on iOS, which hides MACs.
+  final String? classicAddress;
+
+  @override
+  String toString() =>
+      'DeviceInfo($manufacturer $model, serial: $serial, '
+      'hw: $hardwareRevision, fw: $firmwareRevision)';
+}
