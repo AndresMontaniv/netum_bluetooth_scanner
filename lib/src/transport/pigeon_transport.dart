@@ -1,16 +1,18 @@
 import 'dart:async';
-import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:netum_bluetooth_scanner/src/generated/netum_api.g.dart';
 import 'package:netum_bluetooth_scanner/src/generated/netum_api.g.dart'
     as native
     show adapterStates, data, discoveries, linkStates;
+import 'package:netum_bluetooth_scanner/src/transport/platform_errors.dart';
 import 'package:netum_bluetooth_scanner/src/transport/transport.dart';
 
 /// [NetumTransportApi] backed by the Pigeon-generated channels.
 ///
 /// A native event channel has a single sink, so each native stream is
 /// subscribed at most once and re-broadcast to any number of Dart listeners.
+/// Native errors surface as `NetumException`s.
 /// The native subscription starts with the first listener and ends with the
 /// last.
 class PigeonTransport implements NetumTransportApi {
@@ -34,62 +36,68 @@ class PigeonTransport implements NetumTransportApi {
   final _SharedStream<DataMsg> _data;
 
   @override
-  Future<List<ActiveLinkMsg>> initialize() => _host.initialize();
+  Future<List<ActiveLinkMsg>> initialize() => guardPlatform(_host.initialize);
 
   @override
-  Future<AdapterStateMsg> adapterState() => _host.adapterState();
+  Future<AdapterStateMsg> adapterState() => guardPlatform(_host.adapterState);
 
   @override
   Future<PermissionResultMsg> checkPermissions(PermissionScopeMsg scope) =>
-      _host.checkPermissions(scope);
+      guardPlatform(() => _host.checkPermissions(scope));
 
   @override
   Future<PermissionResultMsg> requestPermissions(PermissionScopeMsg scope) =>
-      _host.requestPermissions(scope);
+      guardPlatform(() => _host.requestPermissions(scope));
 
   @override
-  Future<bool> requestEnableBluetooth() => _host.requestEnableBluetooth();
+  Future<bool> requestEnableBluetooth() =>
+      guardPlatform(_host.requestEnableBluetooth);
 
   @override
   Future<void> startDiscovery(DiscoveryOptionsMsg options) =>
-      _host.startDiscovery(options);
+      guardPlatform(() => _host.startDiscovery(options));
 
   @override
-  Future<void> stopDiscovery() => _host.stopDiscovery();
+  Future<void> stopDiscovery() => guardPlatform(_host.stopDiscovery);
 
   @override
-  Future<List<DiscoveredDeviceMsg>> bondedDevices() => _host.bondedDevices();
+  Future<List<DiscoveredDeviceMsg>> bondedDevices() =>
+      guardPlatform(_host.bondedDevices);
 
   @override
   Future<void> connect(String id, ConnectOptionsMsg options) =>
-      _host.connect(id, options);
+      guardPlatform(() => _host.connect(id, options));
 
   @override
-  Future<void> disconnect(String id) => _host.disconnect(id);
+  Future<void> disconnect(String id) =>
+      guardPlatform(() => _host.disconnect(id));
 
   @override
   Future<void> setAutoReconnect(String id, {required bool enabled}) =>
-      _host.setAutoReconnect(id, enabled);
+      guardPlatform(() => _host.setAutoReconnect(id, enabled));
 
   @override
-  Future<void> write(String id, Uint8List bytes) => _host.write(id, bytes);
+  Future<void> write(String id, Uint8List bytes) =>
+      guardPlatform(() => _host.write(id, bytes));
 
   @override
   Future<Uint8List> readCharacteristic(
     String id,
     String serviceUuid,
     String characteristicUuid,
-  ) => _host.readCharacteristic(id, serviceUuid, characteristicUuid);
+  ) => guardPlatform(
+    () => _host.readCharacteristic(id, serviceUuid, characteristicUuid),
+  );
 
   @override
-  Future<int> readRssi(String id) => _host.readRssi(id);
+  Future<int> readRssi(String id) => guardPlatform(() => _host.readRssi(id));
 
   @override
   Future<void> startSppListener(int timeoutMs) =>
-      _host.startSppListener(timeoutMs);
+      guardPlatform(() => _host.startSppListener(timeoutMs));
 
   @override
-  Future<void> stopSppListener() => _host.stopSppListener();
+  Future<void> stopSppListener() => guardPlatform(_host.stopSppListener);
 
   @override
   Stream<AdapterStateMsg> get adapterStates => _adapterStates.stream;
@@ -122,7 +130,10 @@ class _SharedStream<T> {
   void _start() {
     _subscription = _open().listen(
       _controller.add,
-      onError: _controller.addError,
+      onError: (Object error, StackTrace stackTrace) => _controller.addError(
+        error is PlatformException ? mapPlatformException(error) : error,
+        stackTrace,
+      ),
     );
   }
 

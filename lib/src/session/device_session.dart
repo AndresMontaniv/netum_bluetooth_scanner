@@ -105,6 +105,14 @@ class DeviceSession {
   /// Whether the link is up.
   bool get isConnected => _connected;
 
+  /// The command in flight, if it expects the link to drop (rename, power
+  /// off, mode switch). Read it before [handleDisconnected] to tell an
+  /// expected disconnect from a lost link.
+  NetumCommand? get pendingDisconnectCommand {
+    final command = _inFlight?.job.command;
+    return command != null && command.expectsDisconnect ? command : null;
+  }
+
   /// Sends a catalog or custom [command], framed. Commands run one at a
   /// time, in order.
   ///

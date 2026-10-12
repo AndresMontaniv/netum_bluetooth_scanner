@@ -88,3 +88,25 @@ final class NetumInvalidArgument extends NetumException {
   /// Creates the error.
   const NetumInvalidArgument(super.message);
 }
+
+/// The scanner answered with a reply the plugin could not parse.
+final class NetumUnexpectedReply extends NetumException {
+  /// Creates the error for [reply].
+  NetumUnexpectedReply(this.reply) : super('Unexpected reply: "$reply"');
+
+  /// The reply text as received.
+  final String reply;
+}
+
+/// A platform failure without a more specific type, such as a failed BLE
+/// scan.
+final class NetumPlatformError extends NetumException {
+  /// Creates the error with the platform's [code] and [details].
+  const NetumPlatformError(this.code, super.message, {this.details});
+
+  /// The error code, e.g. `discovery-failed`.
+  final String code;
+
+  /// Platform details, such as Android's scan failure code.
+  final Object? details;
+}
