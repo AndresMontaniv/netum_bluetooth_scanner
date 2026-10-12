@@ -31,7 +31,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: dev.andresmontano.netum_bluetooth_scanner
+        package: dev.andresmontano.netum_bluetooth_scanner.plugin
         pluginClass: NetumBluetoothScannerPlugin
       ios:
         pluginClass: NetumBluetoothScannerPlugin

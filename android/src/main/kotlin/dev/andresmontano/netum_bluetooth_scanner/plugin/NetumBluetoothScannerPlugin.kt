@@ -1,4 +1,4 @@
-package dev.andresmontano.netum_bluetooth_scanner
+package dev.andresmontano.netum_bluetooth_scanner.plugin
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
