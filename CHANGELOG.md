@@ -10,4 +10,7 @@
   with a GATT operation queue, several scanners at once, connections that survive a Dart hot restart.
 * Public API: `NetumScanner` (discover, connect, global `scans` / `connectionEvents`) and `NetumDevice`
   (per-device streams, `triggerScan`, `beep`, `getBattery`, `getFirmwareVersion`, `send`, `sendRaw`).
+* iOS BLE: the Bluetooth prompt appears only when the app asks (permissions, discovery or connect), discovery,
+  connections (also to saved scanners without discovery), several scanners at once, hot-restart survival.
+* `NetumDevice.getDeviceInfo()` (Device Information Service; shows the Classic MAC even on iOS).
 * Example app with Status, Discover, Devices, Scans and Console tabs.
