@@ -13,4 +13,9 @@
 * iOS BLE: the Bluetooth prompt appears only when the app asks (permissions, discovery or connect), discovery,
   connections (also to saved scanners without discovery), several scanners at once, hot-restart survival.
 * `NetumDevice.getDeviceInfo()` (Device Information Service; shows the Classic MAC even on iOS).
+* Typed settings and queries (volume, tone, vibration, command beep, scan mode, sleep, terminator, engine,
+  stored count, Bluetooth info), rename (`setName`), `switchMode`, experimental inventory mode.
+* Auto-reconnect (`connect(autoReconnect: true)`, gives up after 30 minutes by default) and saved scanners
+  with `restoreSaved` (most recent first, or all), stored natively.
+* Opt-in `traffic` stream for debugging.
 * Example app with Status, Discover, Devices, Scans and Console tabs.
