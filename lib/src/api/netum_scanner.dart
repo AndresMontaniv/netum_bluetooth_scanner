@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:netum_bluetooth_scanner/src/api/models.dart';
 import 'package:netum_bluetooth_scanner/src/api/netum_device.dart';
+import 'package:netum_bluetooth_scanner/src/api/saved_scanners.dart';
 import 'package:netum_bluetooth_scanner/src/errors.dart';
 import 'package:netum_bluetooth_scanner/src/generated/netum_api.g.dart';
 import 'package:netum_bluetooth_scanner/src/models/adapter_state.dart';
@@ -50,6 +51,8 @@ class NetumScanner implements DeviceHost {
   Future<void>? _initialization;
   AdapterState _adapterState = AdapterState.unknown;
   int _maxConnections = 7;
+  NetumStore? _store;
+  Future<void> _storeWrites = Future.value();
   _Discovery? _discovery;
 
   // region Lifecycle
@@ -250,12 +253,14 @@ class NetumScanner implements DeviceHost {
     String? name,
     bool autoReconnect = false,
     ReconnectPolicy reconnectPolicy = const ReconnectPolicy(),
+    bool remember = true,
     Duration timeout = const Duration(seconds: 15),
   }) async {
     final handle = device(id, transport: transport, name: name);
     await handle.connect(
       autoReconnect: autoReconnect,
       reconnectPolicy: reconnectPolicy,
+      remember: remember,
       timeout: timeout,
     );
     return handle;
@@ -299,6 +304,101 @@ class NetumScanner implements DeviceHost {
     _devices[id] = created;
     _deviceLists.add(knownDevices);
     return created;
+  }
+
+  // endregion
+
+  // region Saved scanners
+
+  /// Where the saved-scanner list lives. Defaults to native key-value
+  /// storage; set your own before the first connect to use other storage.
+  NetumStore get store => _store ??= NativeNetumStore(transport);
+
+  set store(NetumStore value) => _store = value;
+
+  /// Remembered scanners, most recently connected first.
+  Future<List<SavedScanner>> savedScanners() async {
+    await _storeWrites;
+    return decodeSavedScanners(await store.load());
+  }
+
+  /// Removes [id] from the saved scanners.
+  Future<void> forgetScanner(String id) => _updateSaved(
+    (saved) => saved.where((s) => s.id != id).toList(),
+  );
+
+  /// Reconnects saved scanners, each with its saved reconnect settings.
+  /// Call it when the app is ready (e.g. at startup); the plugin never
+  /// reconnects saved scanners by itself.
+  ///
+  /// Returns the devices that are connected afterwards. Scanners that are
+  /// off or out of range are skipped; adapter and permission errors are
+  /// thrown.
+  Future<List<NetumDevice>> restoreSaved({
+    RestoreStrategy strategy = RestoreStrategy.firstAvailable,
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    await initialize();
+    final saved = await savedScanners();
+    Future<NetumDevice?> attempt(SavedScanner entry) async {
+      final handle = device(
+        entry.id,
+        transport: entry.transport,
+        name: entry.name,
+      );
+      try {
+        await handle.connect(
+          autoReconnect: entry.autoReconnect,
+          reconnectPolicy: entry.reconnectPolicy,
+          timeout: timeout,
+        );
+        return handle;
+      } on NetumConnectionFailed {
+        return null;
+      } on NetumDeviceBusy {
+        return null;
+      } on NetumMaxConnectionsReached {
+        return null;
+      }
+    }
+
+    switch (strategy) {
+      case RestoreStrategy.firstAvailable:
+        for (final entry in saved) {
+          if (await attempt(entry) case final device?) return [device];
+        }
+        return [];
+      case RestoreStrategy.all:
+        final results = await Future.wait(
+          saved.take(maxConnections).map(attempt),
+        );
+        return [...results.nonNulls];
+    }
+  }
+
+  @override
+  Future<void> remember(NetumDevice device) => _updateSaved((saved) {
+    final entry = SavedScanner(
+      id: device.id,
+      transport: device.transport,
+      name: device.name,
+      lastConnected: DateTime.now(),
+      autoReconnect: device.autoReconnect,
+      reconnectPolicy: device.reconnectPolicy,
+    );
+    return [entry, ...saved.where((s) => s.id != device.id)];
+  });
+
+  /// Serializes read-modify-write cycles on the store.
+  Future<void> _updateSaved(
+    List<SavedScanner> Function(List<SavedScanner> saved) update,
+  ) {
+    final write = _storeWrites.then((_) async {
+      final saved = decodeSavedScanners(await store.load());
+      await store.save(encodeSavedScanners(update(saved)));
+    });
+    _storeWrites = write.catchError((Object _) {});
+    return write;
   }
 
   // endregion

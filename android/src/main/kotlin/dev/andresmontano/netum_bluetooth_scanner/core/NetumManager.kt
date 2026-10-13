@@ -24,6 +24,7 @@ class NetumManager private constructor(context: Context) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     val adapterMonitor = AdapterMonitor(this.context)
     val permissions = Permissions(this.context)
+    val savedStore = SavedStore(this.context)
 
     /** The attached Flutter side, if any. Events are dropped while detached. */
     var events: NetumEvents? = null

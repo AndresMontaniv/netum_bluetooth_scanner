@@ -697,6 +697,13 @@ interface NetumHostApi {
   /** Android only. */
   fun startSppListener(timeoutMs: Long)
   fun stopSppListener()
+  /**
+   * The saved-scanner list as JSON, from native key-value storage
+   * (Android SharedPreferences, iOS UserDefaults); null if none.
+   */
+  fun loadSavedScanners(): String?
+  /** Replaces the saved-scanner list. */
+  fun saveSavedScanners(json: String)
 
   companion object {
     /** The codec used by NetumHostApi. */
@@ -984,6 +991,39 @@ interface NetumHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               api.stopSppListener()
+              listOf(null)
+            } catch (exception: Throwable) {
+              NetumApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.netum_bluetooth_scanner.NetumHostApi.loadSavedScanners$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.loadSavedScanners())
+            } catch (exception: Throwable) {
+              NetumApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.netum_bluetooth_scanner.NetumHostApi.saveSavedScanners$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val jsonArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              api.saveSavedScanners(jsonArg)
               listOf(null)
             } catch (exception: Throwable) {
               NetumApiPigeonUtils.wrapError(exception)

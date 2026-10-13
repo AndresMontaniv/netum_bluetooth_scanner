@@ -166,6 +166,13 @@ abstract class NetumHostApi {
   void startSppListener(int timeoutMs);
 
   void stopSppListener();
+
+  /// The saved-scanner list as JSON, from native key-value storage
+  /// (Android SharedPreferences, iOS UserDefaults); null if none.
+  String? loadSavedScanners();
+
+  /// Replaces the saved-scanner list.
+  void saveSavedScanners(String json);
 }
 
 @EventChannelApi()

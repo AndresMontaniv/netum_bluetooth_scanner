@@ -141,6 +141,17 @@ public class NetumBluetoothScannerPlugin: NSObject, FlutterPlugin, NetumHostApi,
     throw NetumError.unsupported("SPP is Android only").pigeon
   }
 
+  /// The saved-scanner list (JSON written by Dart) in UserDefaults.
+  private static let savedScannersKey = "dev.andresmontano.netum_bluetooth_scanner.saved_scanners"
+
+  func loadSavedScanners() throws -> String? {
+    UserDefaults.standard.string(forKey: Self.savedScannersKey)
+  }
+
+  func saveSavedScanners(json: String) throws {
+    UserDefaults.standard.set(json, forKey: Self.savedScannersKey)
+  }
+
   private func bridge<T>(_ body: () throws -> T) throws -> T {
     do {
       return try body()

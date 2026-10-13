@@ -655,6 +655,11 @@ protocol NetumHostApi {
   /// Android only.
   func startSppListener(timeoutMs: Int64) throws
   func stopSppListener() throws
+  /// The saved-scanner list as JSON, from native key-value storage
+  /// (Android SharedPreferences, iOS UserDefaults); null if none.
+  func loadSavedScanners() throws -> String?
+  /// Replaces the saved-scanner list.
+  func saveSavedScanners(json: String) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -915,6 +920,37 @@ class NetumHostApiSetup {
       }
     } else {
       stopSppListenerChannel.setMessageHandler(nil)
+    }
+    /// The saved-scanner list as JSON, from native key-value storage
+    /// (Android SharedPreferences, iOS UserDefaults); null if none.
+    let loadSavedScannersChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.netum_bluetooth_scanner.NetumHostApi.loadSavedScanners\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      loadSavedScannersChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.loadSavedScanners()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      loadSavedScannersChannel.setMessageHandler(nil)
+    }
+    /// Replaces the saved-scanner list.
+    let saveSavedScannersChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.netum_bluetooth_scanner.NetumHostApi.saveSavedScanners\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      saveSavedScannersChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let jsonArg = args[0] as! String
+        do {
+          try api.saveSavedScanners(json: jsonArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      saveSavedScannersChannel.setMessageHandler(nil)
     }
   }
 }

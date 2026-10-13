@@ -933,6 +933,48 @@ class NetumHostApi {
       isNullValid: true,
     );
   }
+
+  /// The saved-scanner list as JSON, from native key-value storage
+  /// (Android SharedPreferences, iOS UserDefaults); null if none.
+  Future<String?> loadSavedScanners() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.netum_bluetooth_scanner.NetumHostApi.loadSavedScanners$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+    return pigeonVar_replyValue as String?;
+  }
+
+  /// Replaces the saved-scanner list.
+  Future<void> saveSavedScanners(String json) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.netum_bluetooth_scanner.NetumHostApi.saveSavedScanners$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[json],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+  }
 }
 
 /// Returns a broadcast [Stream] of events from the `adapterStates` event channel.

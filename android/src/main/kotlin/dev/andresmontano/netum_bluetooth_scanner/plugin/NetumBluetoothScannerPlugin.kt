@@ -214,6 +214,10 @@ class NetumBluetoothScannerPlugin :
 
     override fun stopSppListener() = unimplemented("stopSppListener")
 
+    override fun loadSavedScanners(): String? = manager.savedStore.load()
+
+    override fun saveSavedScanners(json: String) = manager.savedStore.save(json)
+
     // endregion
 
     private fun unimplemented(method: String): Nothing =

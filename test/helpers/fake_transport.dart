@@ -119,6 +119,15 @@ class FakeTransport extends Fake implements NetumTransportApi {
   Future<int> readRssi(String id) async => -48;
 
   final autoReconnectCalls = <(String, bool)>[];
+
+  /// The native saved-scanner store.
+  String? savedJson;
+
+  @override
+  Future<String?> loadSavedScanners() async => savedJson;
+
+  @override
+  Future<void> saveSavedScanners(String json) async => savedJson = json;
   final connectOptions = <ConnectOptionsMsg>[];
 
   @override

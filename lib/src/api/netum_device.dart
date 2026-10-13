@@ -32,6 +32,9 @@ abstract interface class DeviceHost {
   /// Syncs with native once; called before any I/O.
   Future<void> initialize();
 
+  /// [device] connected; remember it for `restoreSaved`.
+  Future<void> remember(NetumDevice device);
+
   /// A device changed state.
   void onConnectionEvent(ConnectionEvent event);
 
@@ -110,6 +113,9 @@ class NetumDevice {
   /// Connects and enables notifications. Completes once the device is ready
   /// for data; does nothing if already connected.
   ///
+  /// A successful connect is remembered for `NetumScanner.restoreSaved`
+  /// unless [remember] is false.
+  ///
   /// With [autoReconnect], an unexpected disconnect (out of range, power
   /// off, sleep) moves to [NetumConnectionState.reconnecting] and the same
   /// handle reconnects when the scanner reappears, until
@@ -122,6 +128,7 @@ class NetumDevice {
   Future<void> connect({
     bool autoReconnect = false,
     ReconnectPolicy reconnectPolicy = const ReconnectPolicy(),
+    bool remember = true,
     Duration timeout = const Duration(seconds: 15),
   }) async {
     await _host.initialize();
@@ -181,6 +188,7 @@ class NetumDevice {
       rethrow;
     }
     _markConnected();
+    if (remember) await _host.remember(this);
   }
 
   /// Disconnects. User-initiated: never followed by an automatic reconnect;

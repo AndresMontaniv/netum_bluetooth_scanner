@@ -100,6 +100,13 @@ class PigeonTransport implements NetumTransportApi {
   Future<void> stopSppListener() => guardPlatform(_host.stopSppListener);
 
   @override
+  Future<String?> loadSavedScanners() => guardPlatform(_host.loadSavedScanners);
+
+  @override
+  Future<void> saveSavedScanners(String json) =>
+      guardPlatform(() => _host.saveSavedScanners(json));
+
+  @override
   Stream<AdapterStateMsg> get adapterStates => _adapterStates.stream;
 
   @override

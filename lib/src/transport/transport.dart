@@ -60,6 +60,12 @@ abstract interface class NetumTransportApi {
   /// Stops the SPP listener.
   Future<void> stopSppListener();
 
+  /// The saved-scanner list as JSON from native storage; null if none.
+  Future<String?> loadSavedScanners();
+
+  /// Replaces the saved-scanner list in native storage.
+  Future<void> saveSavedScanners(String json);
+
   /// Adapter state changes. The current state is emitted on subscription.
   Stream<AdapterStateMsg> get adapterStates;
 

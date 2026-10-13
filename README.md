@@ -36,7 +36,33 @@ _To be written._
 
 ## Saved devices and auto-reconnect
 
-_To be written._
+Two separate features:
+
+**Auto-reconnect** (the link drops while the app runs): opt in per connection.
+
+```dart
+await netum.connect(id, transport: NetumTransport.ble, autoReconnect: true);
+// Out of range / powered off / asleep → `reconnecting` → `connected` on the same handle.
+// Gives up after 30 minutes by default: ReconnectPolicy(giveUpAfter: ...).
+// disconnect() never reconnects.
+```
+
+**Saved scanners** (restore at startup, like a car radio): every successful `connect()` is remembered
+(most recent first, with its reconnect settings) unless `remember: false`. The plugin never reconnects
+saved scanners on its own; call `restoreSaved` when your app is ready:
+
+```dart
+// The most recent scanner that is in range:
+final restored = await netum.restoreSaved();
+// Or every saved scanner, up to maxConnections:
+await netum.restoreSaved(strategy: RestoreStrategy.all);
+
+final saved = await netum.savedScanners();
+await netum.forgetScanner(saved.first.id);
+```
+
+The list is stored natively (SharedPreferences / UserDefaults). To use your own storage, set
+`netum.store` to a `NetumStore` before the first connect.
 
 ## Commands
 
