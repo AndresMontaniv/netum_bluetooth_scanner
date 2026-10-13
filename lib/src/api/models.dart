@@ -326,3 +326,28 @@ class DeviceInfo {
       'DeviceInfo($manufacturer $model, serial: $serial, '
       'hw: $hardwareRevision, fw: $firmwareRevision)';
 }
+
+/// The Bluetooth module's identity, read with `AT+NAME`, `AT+ADDR` and
+/// `AT+VER` (works over BLE and SPP).
+@immutable
+class BluetoothInfo {
+  /// Creates Bluetooth module information.
+  const BluetoothInfo({
+    required this.name,
+    required this.classicAddress,
+    required this.firmware,
+  });
+
+  /// The advertised name, e.g. `DS barcode scanner` or a custom one.
+  final String name;
+
+  /// The Classic Bluetooth MAC, e.g. `DC:0D:30:60:B4:2C`. The same in BLE
+  /// and SPP mode, so it identifies the scanner across transports.
+  final String classicAddress;
+
+  /// The Bluetooth module's firmware, e.g. `1.6.2`.
+  final String firmware;
+
+  @override
+  String toString() => 'BluetoothInfo($name, $classicAddress, fw $firmware)';
+}

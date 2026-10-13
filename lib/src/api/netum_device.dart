@@ -227,6 +227,33 @@ class NetumDevice {
     await _send(NetumCommand.power.powerOff);
   }
 
+  /// Renames the scanner (printable ASCII, 1–20 characters). The name
+  /// persists and applies to BLE and SPP.
+  ///
+  /// The scanner drops the link at once, restarts its radio and advertises
+  /// the new name; this completes when the link drops, and the handle's
+  /// [name] is updated. With auto-reconnect on, it reconnects by itself.
+  /// Several scanners can share a name: the [id] identifies a device.
+  Future<void> setName(String name) async {
+    final command = NetumCommand.system.setName(name);
+    await _send(command);
+    _name = name;
+  }
+
+  /// ⚠️ Switches the scanner's Bluetooth mode. The link drops, and the
+  /// scanner must then be found again in the new mode:
+  ///
+  /// - [NetumMode.spp]: Android only; needs OS pairing.
+  /// - [NetumMode.hid]: the scanner pairs as a keyboard and **can no longer
+  ///   be controlled by this plugin** until it is switched back with the
+  ///   `AT+MODE=3` configuration barcode.
+  ///
+  /// Auto-reconnect is turned off for this handle, since the scanner will
+  /// not come back on this transport.
+  Future<void> switchMode(NetumMode mode) async {
+    await _send(NetumCommand.dangerous.mode(mode));
+  }
+
   // endregion
 
   // region Typed queries
@@ -241,6 +268,25 @@ class NetumDevice {
     if (timeout != null) return timeout == Duration.zero ? null : timeout;
     if (reply.toLowerCase().contains('never')) return null;
     throw NetumUnexpectedReply(reply);
+  }
+
+  /// Reads the Bluetooth module's name, Classic MAC and firmware (three
+  /// queued queries). Works over BLE and SPP.
+  Future<BluetoothInfo> getBluetoothInfo() async {
+    final nameReply = await _query(NetumCommand.system.bluetoothName);
+    final addressReply = await _query(NetumCommand.system.bluetoothAddress);
+    final versionReply = await _query(NetumCommand.system.bluetoothFirmware);
+    return BluetoothInfo(
+      name:
+          parseBluetoothName(nameReply) ??
+          (throw NetumUnexpectedReply(nameReply)),
+      classicAddress:
+          parseBluetoothAddress(addressReply) ??
+          (throw NetumUnexpectedReply(addressReply)),
+      firmware:
+          parseBluetoothFirmware(versionReply) ??
+          (throw NetumUnexpectedReply(versionReply)),
+    );
   }
 
   /// Reads how many scans are stored on the scanner (inventory mode).
@@ -276,10 +322,19 @@ class NetumDevice {
 
   // endregion
 
-  /// Reads the scanner's identity from its Device Information Service
-  /// (BLE). Fields the scanner does not expose are `null`.
+  /// Reads the scanner's identity. BLE: the Device Information Service (no
+  /// scanner command). SPP: `AT+ADDR` and `AT+VER`. Fields the scanner does
+  /// not expose are `null`.
   Future<DeviceInfo> getDeviceInfo() async {
     _ensureConnected();
+    if (transport == NetumTransport.spp) {
+      final info = await getBluetoothInfo();
+      return DeviceInfo(
+        serial: info.classicAddress.replaceAll(':', ''),
+        firmwareRevision: info.firmware,
+        classicAddress: info.classicAddress,
+      );
+    }
     Future<String?> read(String characteristic) async {
       try {
         final bytes = await _host.transport.readCharacteristic(

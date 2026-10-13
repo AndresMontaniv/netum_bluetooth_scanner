@@ -105,4 +105,52 @@ void main() {
       },
     );
   });
+
+  group('identity', () {
+    test('setName sends AT+NAME= and updates the handle name', () async {
+      final done = device.setName('Netum-02');
+      await pumpEventQueue();
+      expect(transport.writes.last.$2, encodeFrame('AT+NAME=Netum-02'));
+      transport.link(_id, LinkStateMsg.disconnected, code: 19);
+      await done;
+
+      expect(device.name, 'Netum-02');
+    });
+
+    test('setName validates the name', () async {
+      await expectLater(
+        device.setName(''),
+        throwsA(isA<NetumInvalidArgument>()),
+      );
+    });
+
+    test('switchMode sends AT+MODE= and completes on the drop', () async {
+      final done = device.switchMode(NetumMode.spp);
+      await pumpEventQueue();
+      expect(transport.writes.last.$2, encodeFrame('AT+MODE=1'));
+      transport.link(_id, LinkStateMsg.disconnected, code: 19);
+      await done;
+    });
+
+    test('getBluetoothInfo runs the three AT queries', () async {
+      final info = device.getBluetoothInfo();
+      for (final reply in [
+        '+NAME=Netum-01',
+        '+ADDR=DC0D3060B42C',
+        '+VER=1.6.2\x00',
+      ]) {
+        await pumpEventQueue();
+        transport.receive(_id, '$reply\r'.codeUnits);
+      }
+
+      final result = await info;
+      expect(result.name, 'Netum-01');
+      expect(result.classicAddress, 'DC:0D:30:60:B4:2C');
+      expect(result.firmware, '1.6.2');
+      expect(
+        transport.writes.map((w) => w.$2).toList(),
+        [encodeFrame('AT+NAME'), encodeFrame('AT+ADDR'), encodeFrame('AT+VER')],
+      );
+    });
+  });
 }
