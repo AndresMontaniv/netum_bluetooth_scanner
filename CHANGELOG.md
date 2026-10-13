@@ -18,4 +18,7 @@
 * Auto-reconnect (`connect(autoReconnect: true)`, gives up after 30 minutes by default) and saved scanners
   with `restoreSaved` (most recent first, or all), stored natively.
 * Opt-in `traffic` stream for debugging.
+* Android SPP (Classic Bluetooth): discovery (bonded first, then live), `bondedScanners`, connect with the OS
+  pairing prompt on first use, auto-reconnect with backoff, `switchMode` between SPP and BLE, and optional
+  pair by scanning (`listenForSppScanner`, `sppPairingBarcodeData`).
 * Example app with Status, Discover, Devices, Scans and Console tabs.

@@ -85,11 +85,16 @@ scanning a barcode that contains the phone's Bluetooth MAC. Apps cannot read tha
 the user types it from **Settings → About phone → Status → Bluetooth address**.
 
 ```dart
-final data = NetumScanner.sppPairingBarcodeData('BC:10:7B:D4:9B:C5'); // AT+SPPCONN=BC107BD49BC5
+final data = NetumScanner.sppPairingBarcodeData('88:BD:45:33:5E:2C'); // AT+SPPCONN=88BD45335E2C
 // Show `data` as a Code 128 barcode, then:
 final scanner = await netum.listenForSppScanner().first;
 await netum.connect(scanner.id, transport: NetumTransport.spp);
 ```
+
+Pair by scanning is **best effort**: it depends on the scanner's firmware state. In testing, a DS5000 dialled
+in, made one service lookup and hung up, with the vendor's own app too. Afterwards, the units that had scanned
+the barcode refused other phones until they were power-cycled or their SPP mode barcode was scanned again.
+Prefer the default flow.
 
 ## Debugging with `traffic`
 
