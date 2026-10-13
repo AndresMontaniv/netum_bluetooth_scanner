@@ -40,6 +40,12 @@ abstract interface class DeviceHost {
 
   /// A device read a barcode.
   void onScan(ScanEvent event);
+
+  /// Whether traffic events are wanted.
+  bool get trafficLogEnabled;
+
+  /// A packet went over the wire (only while [trafficLogEnabled]).
+  void onTraffic(TrafficEvent event);
 }
 
 /// A handle to one scanner. `NetumScanner.device` returns the same instance
@@ -579,6 +585,7 @@ class NetumDevice {
   }
 
   void _onPacket(SessionPacket packet) {
+    if (_host.trafficLogEnabled) _host.onTraffic(_traffic(packet));
     if (packet.kind != InboundKind.barcode) return;
     final event = ScanEvent(
       device: this,
@@ -588,6 +595,28 @@ class NetumDevice {
     );
     _scans.add(event);
     _host.onScan(event);
+  }
+
+  TrafficEvent _traffic(SessionPacket packet) {
+    final outbound = packet.direction == PacketDirection.outbound;
+    return TrafficEvent(
+      device: this,
+      direction: outbound
+          ? TrafficDirection.outbound
+          : TrafficDirection.inbound,
+      kind: outbound
+          ? PacketKind.command
+          : switch (packet.kind!) {
+              InboundKind.ack || InboundKind.strayAck => PacketKind.ack,
+              InboundKind.echo => PacketKind.echo,
+              InboundKind.reply => PacketKind.reply,
+              InboundKind.barcode => PacketKind.barcode,
+              InboundKind.strayFrame => PacketKind.unknown,
+            },
+      bytes: packet.bytes,
+      text: outbound ? packet.command?.ascii : packet.text,
+      timestamp: packet.timestamp,
+    );
   }
 
   /// Android GATT 19 / iOS CBError 7: the scanner closed the connection.

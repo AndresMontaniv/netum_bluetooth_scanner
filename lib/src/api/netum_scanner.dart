@@ -47,6 +47,7 @@ class NetumScanner implements DeviceHost {
   final _scans = StreamController<ScanEvent>.broadcast();
   final _connectionEvents = StreamController<ConnectionEvent>.broadcast();
   final _deviceLists = StreamController<List<NetumDevice>>.broadcast();
+  final _traffic = StreamController<TrafficEvent>.broadcast();
   final _subscriptions = <StreamSubscription<Object?>>[];
   Future<void>? _initialization;
   AdapterState _adapterState = AdapterState.unknown;
@@ -96,6 +97,7 @@ class NetumScanner implements DeviceHost {
     await _scans.close();
     await _connectionEvents.close();
     await _deviceLists.close();
+    await _traffic.close();
   }
 
   // endregion
@@ -412,6 +414,15 @@ class NetumScanner implements DeviceHost {
   /// Connection state changes of every device.
   Stream<ConnectionEvent> get connectionEvents => _connectionEvents.stream;
 
+  /// Whether [traffic] reports packets. Off by default: it costs an event
+  /// per packet.
+  @override
+  bool trafficLogEnabled = false;
+
+  /// Every packet of every device, classified, while [trafficLogEnabled].
+  /// For debugging.
+  Stream<TrafficEvent> get traffic => _traffic.stream;
+
   // endregion
 
   // region Router
@@ -439,6 +450,9 @@ class NetumScanner implements DeviceHost {
 
   @override
   void onScan(ScanEvent event) => _scans.add(event);
+
+  @override
+  void onTraffic(TrafficEvent event) => _traffic.add(event);
 
   // endregion
 

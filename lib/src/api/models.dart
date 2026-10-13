@@ -395,3 +395,73 @@ class ReconnectPolicy {
   @override
   String toString() => 'ReconnectPolicy(giveUpAfter: $giveUpAfter)';
 }
+
+/// Direction of a [TrafficEvent].
+enum TrafficDirection {
+  /// Phone → scanner.
+  outbound,
+
+  /// Scanner → phone.
+  inbound,
+}
+
+/// What a [TrafficEvent] carries.
+enum PacketKind {
+  /// A command written to the scanner.
+  command,
+
+  /// An acknowledgement `[LEN, 0x0B]`, also a late or unmatched one.
+  ack,
+
+  /// The command frame echoed back (another form of acknowledgement).
+  echo,
+
+  /// The reply to a query.
+  reply,
+
+  /// A scanned barcode.
+  barcode,
+
+  /// Anything else, e.g. a frame that matches no command.
+  unknown,
+}
+
+/// One packet on the wire, for debugging (`NetumScanner.traffic`).
+@immutable
+class TrafficEvent {
+  /// Creates a traffic event.
+  const TrafficEvent({
+    required this.device,
+    required this.direction,
+    required this.kind,
+    required this.bytes,
+    required this.timestamp,
+    this.text,
+  });
+
+  /// The device it belongs to.
+  final NetumDevice device;
+
+  /// The device's id (same as `device.id`).
+  String get deviceId => device.id;
+
+  /// Phone → scanner or scanner → phone.
+  final TrafficDirection direction;
+
+  /// What the packet is.
+  final PacketKind kind;
+
+  /// The bytes as written or received (frames, terminators included).
+  final Uint8List bytes;
+
+  /// Decoded text for commands, replies and barcodes.
+  final String? text;
+
+  /// When it was seen.
+  final DateTime timestamp;
+
+  @override
+  String toString() =>
+      'TrafficEvent($deviceId ${direction.name} ${kind.name}'
+      '${text == null ? '' : ' "$text"'})';
+}
