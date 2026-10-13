@@ -372,3 +372,12 @@ enum WiredLatency {
   /// The command text.
   final String ascii;
 }
+
+/// Whether scans are sent at once or stored on the scanner (inventory mode).
+enum WorkMode {
+  /// Send each scan immediately (default).
+  normal,
+
+  /// Keep scans in the scanner's memory until uploaded. Experimental.
+  store,
+}

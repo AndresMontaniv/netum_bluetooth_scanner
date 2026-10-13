@@ -259,6 +259,10 @@ final class WorkModeCommands {
   NetumCommand get clearStored =>
       const NetumCommand._('%#*NEW*', 'Clear stored scans');
 
+  /// Sets [mode]: `%#NORMD` or `%#INVMD`.
+  NetumCommand mode(WorkMode mode) =>
+      mode == WorkMode.normal ? normal : inventory;
+
   /// Stores scans automatically while out of range.
   NetumCommand autoSave({required bool enabled}) => NetumCommand._(
     '%AutoSav#${enabled ? 'On' : 'Off'}',

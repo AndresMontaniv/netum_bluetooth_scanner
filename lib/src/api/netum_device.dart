@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:netum_bluetooth_scanner/src/api/models.dart';
+import 'package:netum_bluetooth_scanner/src/commands/command_options.dart';
 import 'package:netum_bluetooth_scanner/src/commands/command_result.dart';
 import 'package:netum_bluetooth_scanner/src/commands/netum_command.dart';
 import 'package:netum_bluetooth_scanner/src/commands/reply_parsers.dart';
@@ -177,10 +178,103 @@ class NetumDevice {
   }
 
   /// Reads the scanner firmware version, e.g. `bn0HDS_RFSBTD43bc_CB071`.
-  Future<String> getFirmwareVersion() async {
-    final result = await _send(NetumCommand.system.firmwareVersion);
-    return result.reply ?? (throw NetumUnexpectedReply(''));
+  Future<String> getFirmwareVersion() =>
+      _query(NetumCommand.system.firmwareVersion);
+
+  // region Typed settings (persist on the scanner)
+
+  /// Sets the beeper volume.
+  Future<void> setVolume(BeepVolume volume) async {
+    await _send(NetumCommand.feedback.volume(volume));
   }
+
+  /// Sets the beeper tone.
+  Future<void> setTone(BeepTone tone) async {
+    await _send(NetumCommand.feedback.tone(tone));
+  }
+
+  /// Turns vibration on or off.
+  Future<void> setVibration({required bool enabled}) async {
+    await _send(NetumCommand.feedback.vibration(enabled: enabled));
+  }
+
+  /// Whether framed commands (everything this plugin sends) are confirmed
+  /// with a beep and vibration. With `false` they are silent but still
+  /// acknowledged, which suits background queries such as battery polling.
+  Future<void> setCommandConfirmationBeep({required bool enabled}) async {
+    await _send(NetumCommand.feedback.ackBeep(enabled: enabled));
+  }
+
+  /// Sets how scans are triggered.
+  Future<void> setScanMode(ScanMode mode) async {
+    await _send(NetumCommand.scan.mode(mode));
+  }
+
+  /// Sets the idle time before the scanner sleeps. A sleeping scanner drops
+  /// the link; pressing its trigger wakes it.
+  Future<void> setSleepTimeout(SleepTimeout timeout) async {
+    await _send(NetumCommand.power.setSleepTimeout(timeout));
+  }
+
+  /// Sets the characters appended after every barcode. Keep a terminator
+  /// (the default is CR): it is what delimits barcodes reliably.
+  Future<void> setTerminator(Terminator terminator) async {
+    await _send(NetumCommand.format.terminator(terminator));
+  }
+
+  /// Turns the scanner off. Completes once the link drops.
+  Future<void> powerOff() async {
+    await _send(NetumCommand.power.powerOff);
+  }
+
+  // endregion
+
+  // region Typed queries
+
+  /// Reads the decode-engine model, e.g. `SE4750`.
+  Future<String> getEngineModel() => _query(NetumCommand.system.decodeEngine);
+
+  /// Reads the idle time before the scanner sleeps; `null` = never.
+  Future<Duration?> getSleepTimeout() async {
+    final reply = await _query(NetumCommand.power.sleepTimeout);
+    final timeout = parseSleepTimeout(reply);
+    if (timeout != null) return timeout == Duration.zero ? null : timeout;
+    if (reply.toLowerCase().contains('never')) return null;
+    throw NetumUnexpectedReply(reply);
+  }
+
+  /// Reads how many scans are stored on the scanner (inventory mode).
+  Future<int> getStoredCount() async {
+    final reply = await _query(NetumCommand.workMode.storedCount);
+    return parseStoredCount(reply) ?? (throw NetumUnexpectedReply(reply));
+  }
+
+  // endregion
+
+  // region Inventory mode (experimental)
+
+  /// Sends scans at once ([WorkMode.normal]) or stores them on the scanner
+  /// ([WorkMode.store]). Experimental.
+  Future<void> setWorkMode(WorkMode mode) async {
+    await _send(NetumCommand.workMode.mode(mode));
+  }
+
+  /// Uploads the stored scans; they arrive on [scans] like live scans.
+  /// Experimental.
+  Future<void> uploadStored({bool clearAfter = false}) async {
+    await _send(
+      clearAfter
+          ? NetumCommand.workMode.uploadAndClear
+          : NetumCommand.workMode.upload,
+    );
+  }
+
+  /// Deletes the stored scans. Experimental.
+  Future<void> clearStored() async {
+    await _send(NetumCommand.workMode.clearStored);
+  }
+
+  // endregion
 
   /// Reads the scanner's identity from its Device Information Service
   /// (BLE). Fields the scanner does not expose are `null`.
@@ -240,6 +334,11 @@ class NetumDevice {
   Future<int> readRssi() async {
     _ensureConnected();
     return _host.transport.readRssi(id);
+  }
+
+  Future<String> _query(NetumCommand command) async {
+    final result = await _send(command);
+    return result.reply ?? (throw NetumUnexpectedReply(''));
   }
 
   Future<CommandResult> _send(NetumCommand command) async {
