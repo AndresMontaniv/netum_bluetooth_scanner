@@ -70,9 +70,76 @@ class _ConsolePageState extends State<ConsolePage> {
     );
   }
 
+  /// A menu button that applies one value of an enum setting.
+  Widget _setting<T extends Enum>(
+    String label,
+    List<T> values,
+    Future<void> Function(T value) apply,
+  ) {
+    return PopupMenuButton<T>(
+      onSelected: (value) =>
+          _state.run('$label ${value.name}', () => apply(value)),
+      itemBuilder: (context) => [
+        for (final value in values)
+          PopupMenuItem(value: value, child: Text(value.name)),
+      ],
+      child: Chip(label: Text(label)),
+    );
+  }
+
   List<Widget> _controls(NetumDevice device) {
     final name = device.name ?? device.id;
     return [
+      Wrap(
+        spacing: 6,
+        children: [
+          _setting('Volume', BeepVolume.values, device.setVolume),
+          _setting('Tone', BeepTone.values, device.setTone),
+          _setting('Scan mode', ScanMode.values, device.setScanMode),
+          _setting('Sleep', SleepTimeout.values, device.setSleepTimeout),
+          _setting('Terminator', Terminator.values, device.setTerminator),
+          _setting('Work mode', WorkMode.values, device.setWorkMode),
+          for (final enabled in [true, false]) ...[
+            ActionChip(
+              label: Text('Vibration ${enabled ? 'on' : 'off'}'),
+              onPressed: () => _state.run(
+                '$name setVibration($enabled)',
+                () => device.setVibration(enabled: enabled),
+              ),
+            ),
+            ActionChip(
+              label: Text('ACK beep ${enabled ? 'on' : 'off'}'),
+              onPressed: () => _state.run(
+                '$name setCommandConfirmationBeep($enabled)',
+                () => device.setCommandConfirmationBeep(enabled: enabled),
+              ),
+            ),
+          ],
+        ],
+      ),
+      Wrap(
+        spacing: 6,
+        children: [
+          for (final (label, query) in <(String, Future<Object?> Function())>[
+            ('Sleep?', device.getSleepTimeout),
+            ('Engine?', device.getEngineModel),
+            ('Stored?', device.getStoredCount),
+            ('Upload', device.uploadStored),
+            ('Upload+clear', () => device.uploadStored(clearAfter: true)),
+            ('Clear stored', device.clearStored),
+          ])
+            ActionChip(
+              label: Text(label),
+              onPressed: () => _state.run('$name $label', query),
+            ),
+          FilterChip(
+            label: const Text('Traffic log'),
+            selected: _state.trafficLogEnabled,
+            onSelected: (value) =>
+                setState(() => _state.trafficLogEnabled = value),
+          ),
+        ],
+      ),
       Wrap(
         spacing: 6,
         children: [

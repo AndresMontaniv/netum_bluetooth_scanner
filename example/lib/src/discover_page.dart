@@ -73,6 +73,14 @@ class _DiscoverPageState extends State<DiscoverPage> {
                 onSelectionChanged: (s) => setState(() => _filter = s.first),
               ),
               const Spacer(),
+              const Text('Auto-reconnect'),
+              ListenableBuilder(
+                listenable: widget.state,
+                builder: (context, _) => Switch(
+                  value: widget.state.autoReconnect,
+                  onChanged: (v) => widget.state.setAutoReconnect(value: v),
+                ),
+              ),
               if (_subscription == null)
                 FilledButton(onPressed: _start, child: const Text('Scan'))
               else
@@ -103,6 +111,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
                         scanner.id,
                         transport: scanner.transport,
                         name: scanner.name,
+                        autoReconnect: widget.state.autoReconnect,
                       ),
                     ),
                     child: const Text('Connect'),

@@ -1,91 +1,204 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:netum_bluetooth_scanner/netum_bluetooth_scanner.dart';
 import 'package:netum_bluetooth_scanner_example/src/app_state.dart';
 
-class DevicesPage extends StatelessWidget {
+class DevicesPage extends StatefulWidget {
   const DevicesPage({required this.state, super.key});
 
   final AppState state;
 
-  /// A scanner id passed with `--dart-define=NETUM_SAVED_ID=<id>`, to test
-  /// connecting a saved device without discovery (saved devices: S4).
-  static const _savedId = String.fromEnvironment('NETUM_SAVED_ID');
+  @override
+  State<DevicesPage> createState() => _DevicesPageState();
+}
+
+class _DevicesPageState extends State<DevicesPage> {
+  List<SavedScanner> _saved = const [];
+
+  AppState get _state => widget.state;
+  NetumScanner get _netum => _state.netum;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_reloadSaved());
+  }
+
+  Future<void> _reloadSaved() async {
+    final saved = await _netum.savedScanners();
+    if (mounted) setState(() => _saved = saved);
+  }
+
+  Future<void> _restore(RestoreStrategy strategy) async {
+    await _state.run(
+      'restore ${strategy.name}',
+      () async => (await _netum.restoreSaved(
+        strategy: strategy,
+      )).map((d) => d.name ?? d.id).toList(),
+    );
+    await _reloadSaved();
+  }
+
+  Future<void> _rename(NetumDevice device) async {
+    final controller = TextEditingController(text: device.name);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rename scanner'),
+        content: TextField(controller: controller, maxLength: 20),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Rename'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (name == null || name.isEmpty) return;
+    await _state.run(
+      '${device.id} setName "$name"',
+      () => device.setName(name),
+    );
+    await _reloadSaved();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final netum = state.netum;
     return StreamBuilder<List<NetumDevice>>(
-      stream: netum.devices,
-      initialData: netum.knownDevices,
+      stream: _netum.devices,
+      initialData: _netum.knownDevices,
       builder: (context, snapshot) {
         final devices = snapshot.data ?? const <NetumDevice>[];
-        final saved = _savedId.isEmpty
-            ? null
-            : ListTile(
-                leading: const Icon(Icons.bookmark),
-                title: const Text('Saved scanner (no discovery)'),
-                subtitle: const Text(_savedId),
-                trailing: TextButton(
-                  onPressed: () => state.run(
-                    'connect saved $_savedId',
-                    () =>
-                        netum.connect(_savedId, transport: NetumTransport.ble),
-                  ),
-                  child: const Text('Connect'),
-                ),
-              );
-        if (devices.isEmpty) {
-          return ListView(
-            children: [
-              ?saved,
-              const ListTile(title: Text('Connect a scanner from Discover.')),
-            ],
-          );
-        }
         return ListView(
           children: [
-            ?saved,
             ListTile(
               title: Text(
-                '${netum.connectedDevices.length} connected · '
+                '${_netum.connectedDevices.length} connected · '
                 '${devices.length} known',
               ),
             ),
-            for (final device in devices)
+            for (final device in devices) _deviceTile(device),
+            const Divider(),
+            ListTile(
+              title: Text('Saved scanners (${_saved.length})'),
+              trailing: IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: _reloadSaved,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Wrap(
+                spacing: 8,
+                children: [
+                  FilledButton.tonal(
+                    onPressed: () => _restore(RestoreStrategy.firstAvailable),
+                    child: const Text('Restore first available'),
+                  ),
+                  FilledButton.tonal(
+                    onPressed: () => _restore(RestoreStrategy.all),
+                    child: const Text('Restore all'),
+                  ),
+                ],
+              ),
+            ),
+            for (final saved in _saved)
               ListTile(
-                leading: Icon(
-                  device.isConnected
-                      ? Icons.bluetooth_connected
-                      : Icons.bluetooth_disabled,
-                ),
-                title: Text(device.name ?? device.id),
+                leading: const Icon(Icons.bookmark),
+                title: Text(saved.name ?? saved.id),
                 subtitle: Text(
-                  [
-                    device.id,
-                    device.state.name,
-                    if (state.lastReason[device.id] case final reason?)
-                      'last: $reason',
-                  ].join(' · '),
+                  '${saved.id}\nlast ${saved.lastConnected.toLocal()} · '
+                  'auto-reconnect ${saved.autoReconnect ? 'on' : 'off'}',
                 ),
-                trailing: device.isConnected
-                    ? TextButton(
-                        onPressed: () => state.run(
-                          'disconnect ${device.id}',
-                          device.disconnect,
-                        ),
-                        child: const Text('Disconnect'),
-                      )
-                    : TextButton(
-                        onPressed: () => state.run(
-                          'connect ${device.id}',
-                          device.connect,
-                        ),
-                        child: const Text('Connect'),
-                      ),
+                isThreeLine: true,
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () async {
+                    await _state.run(
+                      'forget ${saved.id}',
+                      () => _netum.forgetScanner(saved.id),
+                    );
+                    await _reloadSaved();
+                  },
+                ),
               ),
           ],
         );
       },
+    );
+  }
+
+  Widget _deviceTile(NetumDevice device) {
+    final connected = device.isConnected;
+    final active =
+        connected || device.state == NetumConnectionState.reconnecting;
+    return ExpansionTile(
+      leading: Icon(
+        connected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
+      ),
+      title: Text(device.name ?? device.id),
+      subtitle: Text(
+        [
+          device.id,
+          device.state.name,
+          if (_state.lastReason[device.id] case final reason?) 'last: $reason',
+        ].join(' · '),
+      ),
+      children: [
+        SwitchListTile(
+          title: const Text('Auto-reconnect'),
+          value: device.autoReconnect,
+          onChanged: (value) {
+            setState(() => device.autoReconnect = value);
+            _state.log('${device.id} autoReconnect = $value');
+          },
+        ),
+        Wrap(
+          spacing: 8,
+          children: [
+            if (active)
+              TextButton(
+                onPressed: () =>
+                    _state.run('disconnect ${device.id}', device.disconnect),
+                child: const Text('Disconnect'),
+              )
+            else
+              TextButton(
+                onPressed: () => _state.run(
+                  'connect ${device.id}',
+                  () => device.connect(autoReconnect: _state.autoReconnect),
+                ),
+                child: const Text('Connect'),
+              ),
+            if (connected) ...[
+              TextButton(
+                onPressed: () => _rename(device),
+                child: const Text('Rename'),
+              ),
+              TextButton(
+                onPressed: () => _state.run(
+                  '${device.id} getDeviceInfo',
+                  device.getDeviceInfo,
+                ),
+                child: const Text('Device info'),
+              ),
+              TextButton(
+                onPressed: () => _state.run(
+                  '${device.id} getBluetoothInfo',
+                  device.getBluetoothInfo,
+                ),
+                child: const Text('Bluetooth info'),
+              ),
+            ],
+          ],
+        ),
+      ],
     );
   }
 }

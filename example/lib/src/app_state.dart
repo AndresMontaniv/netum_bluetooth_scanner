@@ -10,10 +10,35 @@ class AppState extends ChangeNotifier {
     _subscriptions
       ..add(netum.scans.listen(_onScan))
       ..add(netum.connectionEvents.listen(_onConnection))
-      ..add(netum.adapterState.listen((s) => log('adapter ${s.name}')));
+      ..add(netum.adapterState.listen((s) => log('adapter ${s.name}')))
+      ..add(
+        netum.traffic.listen(
+          (t) => log(
+            'traffic ${t.device.name ?? t.deviceId} ${t.direction.name} '
+            '${t.kind.name} [${hex(t.bytes)}]'
+            '${t.text == null ? '' : ' "${t.text}"'}',
+          ),
+        ),
+      );
   }
 
   final NetumScanner netum;
+
+  /// Auto-reconnect for new connections (Discover tab).
+  bool autoReconnect = true;
+
+  bool get trafficLogEnabled => netum.trafficLogEnabled;
+
+  set trafficLogEnabled(bool value) {
+    netum.trafficLogEnabled = value;
+    log('traffic log ${value ? 'on' : 'off'}');
+  }
+
+  void setAutoReconnect({required bool value}) {
+    autoReconnect = value;
+    notifyListeners();
+  }
+
   final scans = <ScanEvent>[];
   final lines = <String>[];
   final lastReason = <String, DisconnectReason>{};
