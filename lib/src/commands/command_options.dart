@@ -69,16 +69,19 @@ enum BeepType {
 
 /// How scans are triggered.
 enum ScanMode {
-  /// Scan while the trigger key is pressed (default).
+  /// Scan while the trigger is held (default).
   trigger('%SCMD#00#'),
 
-  /// Scan continuously.
+  /// On the DS5000: a trigger press toggles a steady laser on and off.
   continuous('%SCMD#01#'),
 
-  /// A trigger press starts a scan that runs until a read or timeout.
+  /// On the DS5000: a trigger press gives one ~3 s scan that stops by
+  /// itself.
   pulse('%SCMD#02#'),
 
-  /// Only the app triggers scans (see `NetumCommand.scan.trigger`).
+  /// The vendor calls this "host trigger", but on the DS5000 it is not
+  /// app-only: a trigger press toggles a repeating ~1 s scan cycle. App
+  /// triggers (`NetumCommand.scan.trigger`) work in every mode.
   hostTrigger('%SCMD#03#');
 
   const ScanMode(this.ascii);
@@ -150,10 +153,12 @@ enum SleepTimeout {
 
 /// Characters appended after every barcode.
 enum Terminator {
-  /// Nothing. Payloads are then delimited by an idle timeout only.
+  /// No extra terminator (DS5000 factory value; scans still end in CR from a
+  /// built-in setting).
   none('0'),
 
-  /// Carriage return (factory default).
+  /// Carriage return. On the DS5000 this adds a **second** CR: scans already
+  /// end in CR with [none], the factory value.
   cr('1'),
 
   /// Tab.

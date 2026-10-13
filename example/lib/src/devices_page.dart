@@ -41,25 +41,10 @@ class _DevicesPageState extends State<DevicesPage> {
   }
 
   Future<void> _rename(NetumDevice device) async {
-    final controller = TextEditingController(text: device.name);
     final name = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Rename scanner'),
-        content: TextField(controller: controller, maxLength: 20),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Rename'),
-          ),
-        ],
-      ),
+      builder: (context) => _RenameDialog(initialName: device.name),
     );
-    controller.dispose();
     if (name == null || name.isEmpty) return;
     await _state.run(
       '${device.id} setName "$name"',
@@ -197,6 +182,45 @@ class _DevicesPageState extends State<DevicesPage> {
               ),
             ],
           ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Owns its text controller, so it is disposed only after the dialog's exit
+/// animation (disposing it right after `showDialog` returns crashes).
+class _RenameDialog extends StatefulWidget {
+  const _RenameDialog({this.initialName});
+
+  final String? initialName;
+
+  @override
+  State<_RenameDialog> createState() => _RenameDialogState();
+}
+
+class _RenameDialogState extends State<_RenameDialog> {
+  late final _controller = TextEditingController(text: widget.initialName);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Rename scanner'),
+      content: TextField(controller: _controller, maxLength: 20),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _controller.text),
+          child: const Text('Rename'),
         ),
       ],
     );

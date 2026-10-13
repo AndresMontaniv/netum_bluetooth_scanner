@@ -74,6 +74,20 @@ void main() {
     expect((await netum.savedScanners()).map((s) => s.id), [_a, _b]);
   });
 
+  test('setName updates the saved name without reordering', () async {
+    await netum.connect(_a, transport: NetumTransport.ble);
+    final b = await netum.connect(_b, transport: NetumTransport.ble);
+
+    final rename = b.setName('Netum-02');
+    await pumpEventQueue();
+    transport.link(_b, LinkStateMsg.disconnected, code: 19);
+    await rename;
+
+    final saved = await netum.savedScanners();
+    expect(saved.map((s) => s.id), [_b, _a]);
+    expect(saved.first.name, 'Netum-02');
+  });
+
   test('remember: false skips saving', () async {
     await netum.connect(_a, transport: NetumTransport.ble, remember: false);
 

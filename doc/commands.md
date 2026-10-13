@@ -33,7 +33,7 @@ Kind:
 |---|---|---|---|---|
 | `%#NORMD` | Normal mode: send each scan immediately | S | `WorkMode_Normal` | 3 |
 | `%#INVMD` | Storage/inventory mode: keep scans in scanner memory | S | `WorkMode_Store` | 4 |
-| `%#TXMEM` | Upload stored barcodes | A (+data) | `StoreDataUpload` | 5 |
+| `%#TXMEM` | Upload stored barcodes | A (+data) | `StoreDataUpload` | 5 ✅ ACK, then one notification per stored code, each ending in **two** CRs (`…0D 0D`) |
 | `%#TXMEM#C` | Upload stored barcodes, then clear | A (+data) | `StoreDataUploadClear` | 6 |
 | `%#+TCNT` | Count of stored barcodes | Q | `StoreDataNumber` | 7 ✅ `Total Counters=0` |
 | `%#+TCNT#` | Count + memory usage | Q | `StoreDataNumberAndSpaceOccupancy` | 8 |
@@ -44,7 +44,7 @@ Kind:
 
 | Command | Meaning | Kind | AND | iOS |
 |---|---|---|---|---|
-| `$RF#ST` | Read sleep timeout | Q | `ReadSleeptime` | 12 ✅ `Sleeptime=30min` |
+| `$RF#ST` | Read sleep timeout | Q | `ReadSleeptime` | 12 ✅ `Sleeptime=30min`; "never" reads back as `Sleeptime=None` |
 | `$POWER#OFF` | Power off now | A | `PowerOff` | 13 |
 | `$RF#ST{xy}` | Set sleep timeout. `xy` = two chars, value = `(c1-'0')*10 + (c2-'0')`, in 30 s units | S | see below | 14–21 |
 | `%BAT_VOL#` | Read battery level/voltage | Q | `GetVolume` (misnamed; it is battery, not volume) | 22 ✅ `BAT_VOL=3.81V 37%` |
@@ -68,7 +68,7 @@ Sleep presets:
 |---|---|---|---|---|---|
 | `$BUZZ#0` | Mute | S | `BeepMuteVolume` | 23 | |
 | `$BUZZ#1` / `#2` / `#3` | Volume high / mid / low | S | `BeepHigh/Middle/LowVolume` | 24–26 | |
-| `$BUZZ#4` / `#5` | Tone high / low | S | `BeepHighTone` / `BeepLowTone` | 27 / 28 | |
+| `$BUZZ#4` / `#5` | Tone high / low | S | `BeepHighTone` / `BeepLowTone` | 27 / 28 | ✅ ACKed, but **no audible difference on the DS5000** |
 | `$MOTO#0` / `$MOTO#1` | Vibration | S | AND: `#0` = **disable**, `#1` = **enable** | 29 / 30. iOS: `#0` = "vibration **on**", `#1` = "**off**" | ✅ **Android is right:** `$MOTO#1` = vibration ON, `$MOTO#0` = OFF. The iOS labels are swapped |
 | `%ACKBEEP#0` / `#1` | "SDK sound acknowledgement" off / on | S | `SDKAckBeepOff` / `On` | 31 / 32 | ✅ Controls the audible beep + vibration when the scanner receives a **framed** command: `#1` = confirm audibly, `#0` = silent (the `[LEN,0x0B]` ACK is still sent). **Raw commands always beep**, whatever this setting is |
 | `%ACKBEEP#2` | Base/cradle connect beep toggle | S | `BaseConnectBeep` | 33 | |
@@ -87,10 +87,10 @@ Sleep presets:
 | Command | Meaning | Kind | AND | iOS | Notes |
 |---|---|---|---|---|---|
 | `%SCANTM#{n}#` | **Software trigger**: scan for n seconds, n = 1..7 | A | `ScannerUtil.SoftTrigger(n)` (clamps 1..7) | 69 (and "Scan" button = `%SCANTM#1#`) | This is the demo's **SCAN** button with the default **3** |
-| `%SCMD#00#` | Trigger-key scan mode (default) | S | `KeyScanMode` | 61 | |
-| `%SCMD#01#` | Continuous scan mode | S | `ContinueScanMode` | 62 | |
-| `%SCMD#02#` | Key pulse mode | S | `KeyPulseScanMode` | 63 | |
-| `%SCMD#03#` | Host-trigger mode (only the app triggers) | S | `HostTriggerMode` | 64 | Useful for POS: the app decides when to scan |
+| `%SCMD#00#` | Trigger-key scan mode (default) | S | `KeyScanMode` | 61 | ✅ Laser on while the trigger is held |
+| `%SCMD#01#` | Continuous scan mode | S | `ContinueScanMode` | 62 | ✅ DS5000: a trigger press toggles a steady laser on/off |
+| `%SCMD#02#` | Key pulse mode | S | `KeyPulseScanMode` | 63 | ✅ DS5000: a trigger press gives one ~3 s scan that stops by itself |
+| `%SCMD#03#` | Host-trigger mode (vendor label) | S | `HostTriggerMode` | 64 | ✅ **Not app-only on the DS5000:** a trigger press toggles a repeating ~1 s scan cycle; `%SCANTM#n#` from the app still works |
 | `%SCMD#3000D` / `%SCMD#6000D` | Decode timeout 3 s / 6 s | S | `DecodeOvertime3S` / `6S` | 65 / 66 | Pattern: `%SCMD#{ms:4}D` (unverified) |
 | `%SCMD#0500I` / `%SCMD#1000I` | Interval between scans 0.5 s / 1 s | S | `IntervalTime05S` / `10S` | 67 / 68 | Pattern: `%SCMD#{ms:4}I` (unverified) |
 
@@ -165,13 +165,13 @@ Language codes for `$LAN#{XX}`: EN (US), FR, GE (DE), TK (TR-Q), TF (TR-F), PT, 
 | `$DATA#30{nn}#` | Hide n chars (sample `$DATA#3008#`) | S | — | 137 |
 | `$DATA#40{ss}{nn}#` | Hide middle chars (sample `$DATA#40050A#`) | S | — | 138 |
 | `$DATA#50{nn}#` | Hide n chars (sample `$DATA#5011#`) | S | — | 139 |
-| `$TERM#0`…`#4` | Terminator: none / CR / TAB / CRLF / LF | S | — | 140–144 |
+| `$TERM#0`…`#4` | Terminator: none / CR / TAB / CRLF / LF | S | — | 140–144 | ✅ DS5000 factory value is **`#0` (none)**: every scan still ends in CR from a separate built-in setting, and `$TERM#1` adds a **second** CR |
 
 Notes on this section:
 - `{len}` / `{nn}` are 2-digit hex. The iOS demo's `dealPreSuffixCmd` formats `len` with `%1x` and pads it to 2 digits.
 - ⚠️ **Prefix/suffix label conflict inside iOS.** CmdType135 is named "add suffix" but its alert says "enter a prefix", and 136 is the reverse. Going by `$DATA#1` = suffix and `$DATA#2` = prefix, **`$DATA#10…` = suffix and `$DATA#20…` = prefix**.
 - ⚠️ **Hide head/tail conflict inside iOS.** 137 is labelled "hide **first** n", but it uses `3`, which 132 labels "hide **tail**". 139 is labelled "hide **last** n" but uses `5` = "head". Either the labels or the enable commands are swapped (unverified).
-- **`$TERM#1` (CR) is important for the plugin:** a known terminator is the cleanest way to reassemble fragmented barcodes ([protocol.md](protocol.md) §4.4).
+- **Terminators:** the DS5000 ends every scan with CR even at `$TERM#0` (factory). Leave `$TERM` at none; `$TERM#1` doubles the CR. The plugin's decoder strips any trailing run of CR/LF/TAB, so either works ([protocol.md](protocol.md) §4.4).
 
 ## 11. Raw engine passthrough (Android, unused)
 

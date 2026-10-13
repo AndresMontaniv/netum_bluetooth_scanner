@@ -73,14 +73,6 @@ class _DiscoverPageState extends State<DiscoverPage> {
                 onSelectionChanged: (s) => setState(() => _filter = s.first),
               ),
               const Spacer(),
-              const Text('Auto-reconnect'),
-              ListenableBuilder(
-                listenable: widget.state,
-                builder: (context, _) => Switch(
-                  value: widget.state.autoReconnect,
-                  onChanged: (v) => widget.state.setAutoReconnect(value: v),
-                ),
-              ),
               if (_subscription == null)
                 FilledButton(onPressed: _start, child: const Text('Scan'))
               else
@@ -89,6 +81,15 @@ class _DiscoverPageState extends State<DiscoverPage> {
                   child: const Text('Stop'),
                 ),
             ],
+          ),
+        ),
+        ListenableBuilder(
+          listenable: widget.state,
+          builder: (context, _) => SwitchListTile(
+            dense: true,
+            title: const Text('Auto-reconnect new connections'),
+            value: widget.state.autoReconnect,
+            onChanged: (v) => widget.state.setAutoReconnect(value: v),
           ),
         ),
         if (_subscription != null) const LinearProgressIndicator(),

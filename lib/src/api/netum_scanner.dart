@@ -391,6 +391,24 @@ class NetumScanner implements DeviceHost {
     return [entry, ...saved.where((s) => s.id != device.id)];
   });
 
+  @override
+  Future<void> updateSavedName(NetumDevice device) => _updateSaved(
+    (saved) => [
+      for (final entry in saved)
+        if (entry.id == device.id)
+          SavedScanner(
+            id: entry.id,
+            transport: entry.transport,
+            name: device.name,
+            lastConnected: entry.lastConnected,
+            autoReconnect: entry.autoReconnect,
+            reconnectPolicy: entry.reconnectPolicy,
+          )
+        else
+          entry,
+    ],
+  );
+
   /// Serializes read-modify-write cycles on the store.
   Future<void> _updateSaved(
     List<SavedScanner> Function(List<SavedScanner> saved) update,

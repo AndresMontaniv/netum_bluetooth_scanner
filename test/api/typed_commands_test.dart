@@ -86,6 +86,8 @@ void main() {
     test('getSleepTimeout maps zero and "never" to null', () async {
       expect(await replied(device.getSleepTimeout, 'Sleeptime=0min'), isNull);
       expect(await replied(device.getSleepTimeout, 'Sleeptime=Never'), isNull);
+      // What the DS5000 actually sends for "never".
+      expect(await replied(device.getSleepTimeout, 'Sleeptime=None'), isNull);
     });
 
     test('getStoredCount', () async {

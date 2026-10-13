@@ -461,8 +461,8 @@ final class FormatCommands {
     );
   }
 
-  /// Sets the characters appended after every barcode. Keep a terminator
-  /// (CR by default): it is what delimits barcodes reliably.
+  /// Sets the extra characters appended after every barcode. On the DS5000
+  /// scans already end in CR at the factory value [Terminator.none].
   NetumCommand terminator(Terminator terminator) => NetumCommand._(
     '\$TERM#${terminator.code}',
     'Terminator ${terminator.name}',

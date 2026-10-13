@@ -35,6 +35,9 @@ abstract interface class DeviceHost {
   /// [device] connected; remember it for `restoreSaved`.
   Future<void> remember(NetumDevice device);
 
+  /// [device] was renamed; update its saved entry, if any.
+  Future<void> updateSavedName(NetumDevice device);
+
   /// A device changed state.
   void onConnectionEvent(ConnectionEvent event);
 
@@ -236,7 +239,8 @@ class NetumDevice {
     await _send(NetumCommand.feedback.volume(volume));
   }
 
-  /// Sets the beeper tone.
+  /// Sets the beeper tone. Acknowledged by the DS5000 but with no audible
+  /// difference there; other models may differ.
   Future<void> setTone(BeepTone tone) async {
     await _send(NetumCommand.feedback.tone(tone));
   }
@@ -264,8 +268,9 @@ class NetumDevice {
     await _send(NetumCommand.power.setSleepTimeout(timeout));
   }
 
-  /// Sets the characters appended after every barcode. Keep a terminator
-  /// (the default is CR): it is what delimits barcodes reliably.
+  /// Sets the extra characters appended after every barcode. On the DS5000
+  /// scans already end in CR at the factory value [Terminator.none]; other
+  /// values add to it. The plugin strips any trailing terminators.
   Future<void> setTerminator(Terminator terminator) async {
     await _send(NetumCommand.format.terminator(terminator));
   }
@@ -286,6 +291,7 @@ class NetumDevice {
     final command = NetumCommand.system.setName(name);
     await _send(command);
     _name = name;
+    await _host.updateSavedName(this);
   }
 
   /// ⚠️ Switches the scanner's Bluetooth mode. The link drops, and the
@@ -319,7 +325,9 @@ class NetumDevice {
     final reply = await _query(NetumCommand.power.sleepTimeout);
     final timeout = parseSleepTimeout(reply);
     if (timeout != null) return timeout == Duration.zero ? null : timeout;
-    if (reply.toLowerCase().contains('never')) return null;
+    // The DS5000 reports "never" as `Sleeptime=None` (hardware test H4.4).
+    final value = reply.toLowerCase();
+    if (value.contains('none') || value.contains('never')) return null;
     throw NetumUnexpectedReply(reply);
   }
 
