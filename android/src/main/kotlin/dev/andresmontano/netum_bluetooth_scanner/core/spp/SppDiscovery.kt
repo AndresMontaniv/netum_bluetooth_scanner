@@ -64,8 +64,11 @@ class SppDiscovery(
             addAction(BluetoothDevice.ACTION_FOUND)
             addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
         }
+        // ACTION_FOUND comes from the Bluetooth app (com.android.bluetooth), not the system server,
+        // so a NOT_EXPORTED receiver never gets it (found on the A24, S5). Adapter on/off
+        // broadcasts come from the system server and work with NOT_EXPORTED.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(newReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            context.registerReceiver(newReceiver, filter, Context.RECEIVER_EXPORTED)
         } else {
             context.registerReceiver(newReceiver, filter)
         }
