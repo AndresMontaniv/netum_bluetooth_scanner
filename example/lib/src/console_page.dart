@@ -99,6 +99,7 @@ class _ConsolePageState extends State<ConsolePage> {
           _setting('Sleep', SleepTimeout.values, device.setSleepTimeout),
           _setting('Terminator', Terminator.values, device.setTerminator),
           _setting('Work mode', WorkMode.values, device.setWorkMode),
+          _setting('Switch mode', NetumMode.values, device.switchMode),
           for (final enabled in [true, false]) ...[
             ActionChip(
               label: Text('Vibration ${enabled ? 'on' : 'off'}'),

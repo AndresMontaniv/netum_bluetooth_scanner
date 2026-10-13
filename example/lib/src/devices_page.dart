@@ -98,7 +98,8 @@ class _DevicesPageState extends State<DevicesPage> {
                 leading: const Icon(Icons.bookmark),
                 title: Text(saved.name ?? saved.id),
                 subtitle: Text(
-                  '${saved.id}\nlast ${saved.lastConnected.toLocal()} · '
+                  '${saved.id} · ${saved.transport.name.toUpperCase()}\n'
+                  'last ${saved.lastConnected.toLocal()} · '
                   'auto-reconnect ${saved.autoReconnect ? 'on' : 'off'}',
                 ),
                 isThreeLine: true,
@@ -131,6 +132,7 @@ class _DevicesPageState extends State<DevicesPage> {
       subtitle: Text(
         [
           device.id,
+          device.transport.name.toUpperCase(),
           device.state.name,
           if (_state.lastReason[device.id] case final reason?) 'last: $reason',
         ].join(' · '),
