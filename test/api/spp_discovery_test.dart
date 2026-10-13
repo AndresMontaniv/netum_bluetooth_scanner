@@ -47,7 +47,7 @@ void main() {
       netum.discover(transport: NetumTransport.spp).listen(found.add);
       await pumpEventQueue();
 
-      for (final device in [
+      [
         _spp('DC:0D:30:60:B5:1D', name: 'Netum-02'),
         _spp('11:22:33:44:55:66', name: 'DS barcode scanner'),
         _spp(
@@ -56,9 +56,7 @@ void main() {
         ),
         _spp('00:1A:7D:DA:71:15', name: 'LAPTOP-MARCELO'),
         _spp('33:44:55:66:77:88', name: 'Dell Mouse'),
-      ]) {
-        transport.discoveryController.add(device);
-      }
+      ].forEach(transport.discoveryController.add);
       await pumpEventQueue();
 
       expect(found.map((d) => d.id), [
