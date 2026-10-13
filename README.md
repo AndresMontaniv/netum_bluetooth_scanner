@@ -70,7 +70,26 @@ _To be written._
 
 ## SPP pairing (Android)
 
-_To be written._
+**Default flow:** put the scanner in SPP mode, then discover and connect. Android shows its pairing prompt
+the first time; after that the scanner reconnects directly (about 1 s), also from the saved list.
+
+```dart
+await for (final s in netum.discover(transport: NetumTransport.spp)) {
+  await netum.connect(s.id, transport: NetumTransport.spp, name: s.name);
+  break;
+}
+```
+
+**Pair by scanning** (optional, the vendor's flow): the phone listens and the scanner dials in after
+scanning a barcode that contains the phone's Bluetooth MAC. Apps cannot read that MAC on Android 6+, so
+the user types it from **Settings → About phone → Status → Bluetooth address**.
+
+```dart
+final data = NetumScanner.sppPairingBarcodeData('BC:10:7B:D4:9B:C5'); // AT+SPPCONN=BC107BD49BC5
+// Show `data` as a Code 128 barcode, then:
+final scanner = await netum.listenForSppScanner().first;
+await netum.connect(scanner.id, transport: NetumTransport.spp);
+```
 
 ## Debugging with `traffic`
 

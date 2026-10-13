@@ -55,6 +55,7 @@ class NetumScanner implements DeviceHost {
   NetumStore? _store;
   Future<void> _storeWrites = Future.value();
   _Discovery? _discovery;
+  StreamController<DiscoveredScanner>? _sppListening;
 
   // region Lifecycle
 
@@ -212,6 +213,106 @@ class NetumScanner implements DeviceHost {
           ),
     ];
   }
+
+  // region SPP pair by scanning (Android)
+
+  /// Waits for a scanner to dial in after it scans the barcode made from
+  /// [sppPairingBarcodeData] (the vendor's "pair by scanning" flow). Emits
+  /// that scanner once and closes; connect to it as usual. Closes empty
+  /// after [timeout] or on [stopListeningForSppScanner].
+  ///
+  /// The default SPP flow, [discover] with [NetumTransport.spp] and then
+  /// connect (which shows the OS pairing prompt), does not need this.
+  /// Android only: throws [NetumUnsupportedTransport] elsewhere.
+  Stream<DiscoveredScanner> listenForSppScanner({
+    Duration timeout = const Duration(minutes: 2),
+  }) {
+    late final StreamController<DiscoveredScanner> controller;
+    StreamSubscription<DiscoveredDeviceMsg>? subscription;
+    Timer? timer;
+    var finished = false;
+    Future<void> finish() async {
+      // Runs once: closing the stream also triggers onCancel.
+      if (finished) return;
+      finished = true;
+      timer?.cancel();
+      await subscription?.cancel();
+      subscription = null;
+      try {
+        await transport.stopSppListener();
+      } on NetumException {
+        // Already stopped.
+      }
+      if (!controller.isClosed) await controller.close();
+    }
+
+    controller = StreamController<DiscoveredScanner>(
+      onListen: () async {
+        try {
+          await initialize();
+          if (!isSupported(NetumTransport.spp)) {
+            throw const NetumUnsupportedTransport('SPP is Android only');
+          }
+          await _discovery?.end();
+          subscription = transport.discoveries.listen((found) {
+            if (found.transport != TransportMsg.spp) return;
+            controller.add(
+              DiscoveredScanner(
+                id: found.id,
+                transport: NetumTransport.spp,
+                name: found.name,
+                rssi: found.rssi,
+                bonded: found.bonded,
+                likelyNetum: true,
+                serviceUuids: found.serviceUuids,
+                lastSeen: DateTime.now(),
+              ),
+            );
+            unawaited(finish());
+          }, onError: controller.addError);
+          await transport.startSppListener(timeout.inMilliseconds + 2000);
+          timer = Timer(timeout, () => unawaited(finish()));
+        } on Object catch (error, stackTrace) {
+          controller.addError(error, stackTrace);
+          await finish();
+        }
+      },
+      onCancel: finish,
+    );
+    _sppListening = controller;
+    return controller.stream;
+  }
+
+  /// Stops [listenForSppScanner], closing its stream.
+  Future<void> stopListeningForSppScanner() async {
+    final listening = _sppListening;
+    _sppListening = null;
+    if (listening != null && !listening.isClosed) await listening.close();
+    try {
+      await transport.stopSppListener();
+    } on NetumException {
+      // Already stopped.
+    }
+  }
+
+  /// The barcode text that makes a scanner in SPP mode dial in to this
+  /// phone: `AT+SPPCONN=AABBCCDDEEFF`. Render it as Code 128.
+  ///
+  /// Apps cannot read the phone's own Bluetooth MAC (Android 6+): the user
+  /// finds it in Settings → About phone → Status → Bluetooth address.
+  /// Accepts `AA:BB:CC:DD:EE:FF` or `AABBCCDDEEFF`; throws
+  /// [NetumInvalidArgument] otherwise.
+  static String sppPairingBarcodeData(String phoneBluetoothMac) {
+    final hex = phoneBluetoothMac.trim().toUpperCase().replaceAll(':', '');
+    if (!RegExp(r'^[0-9A-F]{12}$').hasMatch(hex)) {
+      throw NetumInvalidArgument(
+        'Not a Bluetooth MAC address: "$phoneBluetoothMac"',
+      );
+    }
+    return 'AT+SPPCONN=$hex';
+  }
+
+  // endregion
 
   /// Ends the running discovery, closing its stream.
   Future<void> stopDiscovery() async => _discovery?.end();

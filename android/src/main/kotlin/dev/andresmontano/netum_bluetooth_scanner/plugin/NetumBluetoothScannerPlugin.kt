@@ -90,6 +90,7 @@ class NetumBluetoothScannerPlugin :
         if (manager.events === this) manager.events = null
         manager.adapterMonitor.stop()
         manager.stopDiscovery()
+        manager.stopSppListener()
         discoveriesSink = null
         linkStatesSink = null
         dataSink = null
@@ -218,9 +219,9 @@ class NetumBluetoothScannerPlugin :
 
     override suspend fun readRssi(id: String): Long = bridge { manager.bleLink(id).readRssi().toLong() }
 
-    override fun startSppListener(timeoutMs: Long) = unimplemented("startSppListener")
+    override fun startSppListener(timeoutMs: Long) = bridge { manager.startSppListener(timeoutMs) }
 
-    override fun stopSppListener() = unimplemented("stopSppListener")
+    override fun stopSppListener() = manager.stopSppListener()
 
     override fun loadSavedScanners(): String? = manager.savedStore.load()
 

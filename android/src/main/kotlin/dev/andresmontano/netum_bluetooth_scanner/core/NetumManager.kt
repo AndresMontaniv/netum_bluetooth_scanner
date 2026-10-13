@@ -13,6 +13,7 @@ import dev.andresmontano.netum_bluetooth_scanner.core.ble.BleLink
 import dev.andresmontano.netum_bluetooth_scanner.core.ble.BleScanner
 import dev.andresmontano.netum_bluetooth_scanner.core.spp.SppDiscovery
 import dev.andresmontano.netum_bluetooth_scanner.core.spp.SppLink
+import dev.andresmontano.netum_bluetooth_scanner.core.spp.SppListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -83,6 +84,28 @@ class NetumManager private constructor(context: Context) {
     fun stopDiscovery() {
         bleScanner?.stop()
         sppDiscovery?.stop()
+    }
+
+    private var sppListener: SppListener? = null
+
+    /**
+     * Waits for a scanner to dial in after scanning `AT+SPPCONN=<phone MAC>`; reports it through
+     * the discoveries stream. Stops discovery first so the two can't be confused.
+     */
+    fun startSppListener(timeoutMs: Long) {
+        val adapter = adapterMonitor.adapter
+            ?: throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "No Bluetooth adapter", "unsupported")
+        if (!adapterMonitor.isPoweredOn) {
+            throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "Bluetooth is off", "poweredOff")
+        }
+        permissions.ensure(PermissionScope.CONNECTION)
+        stopDiscovery()
+        val listener = sppListener ?: SppListener(adapter, scope, ::emitDiscovery).also { sppListener = it }
+        listener.start(timeoutMs)
+    }
+
+    fun stopSppListener() {
+        sppListener?.stop()
     }
 
     /** Bonded Classic devices (SPP candidates). */
