@@ -185,7 +185,13 @@ class NetumBluetoothScannerPlugin :
     }
 
     override suspend fun connect(id: String, options: ConnectOptionsMsg) = bridge {
-        manager.connect(id, options.transport.toCore(), options.timeoutMs, options.autoReconnect)
+        manager.connect(
+            id,
+            options.transport.toCore(),
+            options.timeoutMs,
+            options.autoReconnect,
+            options.sppInsecureFallback,
+        )
     }
 
     override suspend fun disconnect(id: String) = bridge {

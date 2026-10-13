@@ -12,6 +12,7 @@ import dev.andresmontano.netum_bluetooth_scanner.core.adapter.Permissions
 import dev.andresmontano.netum_bluetooth_scanner.core.ble.BleLink
 import dev.andresmontano.netum_bluetooth_scanner.core.ble.BleScanner
 import dev.andresmontano.netum_bluetooth_scanner.core.spp.SppDiscovery
+import dev.andresmontano.netum_bluetooth_scanner.core.spp.SppLink
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -95,10 +96,13 @@ class NetumManager private constructor(context: Context) {
         sppDiscovery ?: SppDiscovery(context, adapter, scope, ::emitDiscovery).also { sppDiscovery = it }
 
     /** Connects [id]; returns once the link is ready for data. Idempotent while connected. */
-    suspend fun connect(id: String, transport: Transport, timeoutMs: Long, autoReconnect: Boolean) {
-        if (transport == Transport.SPP) {
-            throw NetumError(NetumError.UNIMPLEMENTED, "SPP connections arrive in S5")
-        }
+    suspend fun connect(
+        id: String,
+        transport: Transport,
+        timeoutMs: Long,
+        autoReconnect: Boolean,
+        sppInsecureFallback: Boolean,
+    ) {
         val adapter = adapterMonitor.adapter
             ?: throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "No Bluetooth adapter", "unsupported")
         if (!adapterMonitor.isPoweredOn) {
@@ -116,13 +120,29 @@ class NetumManager private constructor(context: Context) {
             throw NetumError(NetumError.BUSY, "$id is already connecting")
         }
 
-        val link = BleLink(this, adapter.getRemoteDevice(id))
-        register(link)
-        try {
-            link.connect(timeoutMs, autoReconnect)
-        } catch (e: Exception) {
-            unregister(link)
-            throw e
+        val device = adapter.getRemoteDevice(id)
+        when (transport) {
+            Transport.BLE -> {
+                val link = BleLink(this, device)
+                register(link)
+                try {
+                    link.connect(timeoutMs, autoReconnect)
+                } catch (e: Exception) {
+                    unregister(link)
+                    throw e
+                }
+            }
+            Transport.SPP -> {
+                stopDiscovery() // Classic discovery slows RFCOMM connects down a lot.
+                val link = SppLink(this, device)
+                register(link)
+                try {
+                    link.connect(timeoutMs, autoReconnect, sppInsecureFallback)
+                } catch (e: Exception) {
+                    unregister(link)
+                    throw e
+                }
+            }
         }
     }
 
