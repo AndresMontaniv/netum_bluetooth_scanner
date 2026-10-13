@@ -188,6 +188,31 @@ class NetumScanner implements DeviceHost {
     return controller.stream;
   }
 
+  /// Devices bonded (paired) with the phone over Classic Bluetooth, the SPP
+  /// candidates. Android only; empty on iOS. Needs the connection
+  /// permission.
+  Future<List<DiscoveredScanner>> bondedScanners({
+    DiscoveryFilter filter = DiscoveryFilter.likelyNetum,
+  }) async {
+    await initialize();
+    if (!isSupported(NetumTransport.spp)) return const [];
+    final bonded = await transport.bondedDevices();
+    return [
+      for (final found in bonded)
+        if (filter == DiscoveryFilter.all || _Discovery.isLikelyNetum(found))
+          DiscoveredScanner(
+            id: found.id,
+            transport: NetumTransport.spp,
+            name: found.name,
+            rssi: found.rssi,
+            bonded: true,
+            likelyNetum: _Discovery.isLikelyNetum(found),
+            serviceUuids: found.serviceUuids,
+            lastSeen: DateTime.now(),
+          ),
+    ];
+  }
+
   /// Ends the running discovery, closing its stream.
   Future<void> stopDiscovery() async => _discovery?.end();
 
@@ -509,7 +534,7 @@ class _Discovery {
 
   void report(DiscoveredDeviceMsg found) {
     if (_ended) return;
-    final likelyNetum = _advertisesNetum(found.serviceUuids);
+    final likelyNetum = isLikelyNetum(found);
     // The native filter already applies, but a result from the previous
     // (unfiltered) scan can still be in flight when this one starts.
     if (filter == DiscoveryFilter.likelyNetum && !likelyNetum) return;
@@ -560,12 +585,25 @@ class _Discovery {
   }
 
   static const _netumServices = {'FFF0', 'FF00', '18F0'};
+  static const _sppService = '1101';
+  static final _netumName = RegExp('barcode|netum', caseSensitive: false);
 
-  /// Matches 16-bit UUIDs (`FFF0`) and their 128-bit form
-  /// (`0000FFF0-0000-1000-8000-00805F9B34FB`).
-  static bool _advertisesNetum(List<String> uuids) => uuids.any((uuid) {
+  /// BLE: advertises FFF0, FF00 or 18F0. SPP / bonded: the module vendor's
+  /// Classic MAC prefix `DC:0D:30`, the SPP service in the record, or a name
+  /// like "DS barcode scanner" / "Netum-01" (B2).
+  static bool isLikelyNetum(DiscoveredDeviceMsg found) {
+    final shortUuids = found.serviceUuids.map(_shortUuid).toSet();
+    if (found.transport == TransportMsg.ble) {
+      return shortUuids.any(_netumServices.contains);
+    }
+    return found.id.toUpperCase().startsWith('DC:0D:30') ||
+        shortUuids.contains(_sppService) ||
+        _netumName.hasMatch(found.name ?? '');
+  }
+
+  /// `FFF0` from `FFF0` or `0000FFF0-0000-1000-8000-00805F9B34FB`.
+  static String _shortUuid(String uuid) {
     final upper = uuid.toUpperCase();
-    final short = upper.length == 4 ? upper : upper.substring(4, 8);
-    return _netumServices.contains(short);
-  });
+    return upper.length == 4 ? upper : upper.substring(4, 8);
+  }
 }

@@ -11,6 +11,7 @@ import dev.andresmontano.netum_bluetooth_scanner.core.adapter.PermissionScope
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.Permissions
 import dev.andresmontano.netum_bluetooth_scanner.core.ble.BleLink
 import dev.andresmontano.netum_bluetooth_scanner.core.ble.BleScanner
+import dev.andresmontano.netum_bluetooth_scanner.core.spp.SppDiscovery
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -51,15 +52,13 @@ class NetumManager private constructor(context: Context) {
         }
     }
     private var bleScanner: BleScanner? = null
+    private var sppDiscovery: SppDiscovery? = null
 
     val isDiscovering: Boolean
-        get() = bleScanner?.isScanning == true
+        get() = bleScanner?.isScanning == true || sppDiscovery?.isDiscovering == true
 
-    /** Starts BLE discovery; results and failures arrive through [events]. */
+    /** Starts discovery; results and failures arrive through [events]. */
     fun startDiscovery(transport: Transport, filterNetum: Boolean, timeoutMs: Long) {
-        if (transport == Transport.SPP) {
-            throw NetumError(NetumError.UNIMPLEMENTED, "SPP discovery arrives in S5")
-        }
         val adapter = adapterMonitor.adapter
             ?: throw NetumError(NetumError.BLUETOOTH_UNAVAILABLE, "No Bluetooth adapter", "unsupported")
         if (!adapterMonitor.isPoweredOn) {
@@ -69,14 +68,31 @@ class NetumManager private constructor(context: Context) {
         if (AdapterMonitor.LOCATION_BLOCKS_DISCOVERY && !adapterMonitor.isLocationEnabled) {
             throw NetumError(NetumError.LOCATION_OFF, "Location services are off")
         }
-        val scanner = bleScanner ?: BleScanner(adapter, scope, ::emitDiscovery, ::emitDiscoveryError)
-            .also { bleScanner = it }
-        scanner.start(filterNetum, timeoutMs)
+        stopDiscovery()
+        when (transport) {
+            Transport.BLE -> {
+                val scanner = bleScanner ?: BleScanner(adapter, scope, ::emitDiscovery, ::emitDiscoveryError)
+                    .also { bleScanner = it }
+                scanner.start(filterNetum, timeoutMs)
+            }
+            Transport.SPP -> sppDiscovery(adapter).start(timeoutMs)
+        }
     }
 
     fun stopDiscovery() {
         bleScanner?.stop()
+        sppDiscovery?.stop()
     }
+
+    /** Bonded Classic devices (SPP candidates). */
+    fun bondedDevices(): List<DiscoveredDevice> {
+        val adapter = adapterMonitor.adapter ?: return emptyList()
+        permissions.ensure(PermissionScope.CONNECTION)
+        return sppDiscovery(adapter).bonded()
+    }
+
+    private fun sppDiscovery(adapter: android.bluetooth.BluetoothAdapter) =
+        sppDiscovery ?: SppDiscovery(context, adapter, scope, ::emitDiscovery).also { sppDiscovery = it }
 
     /** Connects [id]; returns once the link is ready for data. Idempotent while connected. */
     suspend fun connect(id: String, transport: Transport, timeoutMs: Long, autoReconnect: Boolean) {

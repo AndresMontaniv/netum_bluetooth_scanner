@@ -180,7 +180,9 @@ class NetumBluetoothScannerPlugin :
 
     override fun stopDiscovery() = manager.stopDiscovery()
 
-    override fun bondedDevices(): List<DiscoveredDeviceMsg> = unimplemented("bondedDevices")
+    override fun bondedDevices(): List<DiscoveredDeviceMsg> = bridge {
+        manager.bondedDevices().map { it.toMsg() }
+    }
 
     override suspend fun connect(id: String, options: ConnectOptionsMsg) = bridge {
         manager.connect(id, options.transport.toCore(), options.timeoutMs, options.autoReconnect)
