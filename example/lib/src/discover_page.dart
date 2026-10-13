@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:netum_bluetooth_scanner/netum_bluetooth_scanner.dart';
 import 'package:netum_bluetooth_scanner_example/src/app_state.dart';
+import 'package:netum_bluetooth_scanner_example/src/pair_page.dart';
 
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({required this.state, super.key});
@@ -16,6 +17,7 @@ class DiscoverPage extends StatefulWidget {
 class _DiscoverPageState extends State<DiscoverPage> {
   final _found = <String, DiscoveredScanner>{};
   DiscoveryFilter _filter = DiscoveryFilter.likelyNetum;
+  NetumTransport _transport = NetumTransport.ble;
   StreamSubscription<DiscoveredScanner>? _subscription;
 
   NetumScanner get _netum => widget.state.netum;
@@ -23,9 +25,9 @@ class _DiscoverPageState extends State<DiscoverPage> {
   void _start() {
     unawaited(_subscription?.cancel());
     setState(_found.clear);
-    widget.state.log('discover ${_filter.name}');
+    widget.state.log('discover ${_transport.name} ${_filter.name}');
     _subscription = _netum
-        .discover(filter: _filter)
+        .discover(transport: _transport, filter: _filter)
         .listen(
           (scanner) {
             if (!_found.containsKey(scanner.id)) {
@@ -43,6 +45,22 @@ class _DiscoverPageState extends State<DiscoverPage> {
           },
         );
     setState(() {});
+  }
+
+  Future<void> _showBonded() async {
+    try {
+      final bonded = await _netum.bondedScanners();
+      widget.state.log(
+        'bondedScanners → ${bonded.map((s) => '${s.name} ${s.id}').toList()}',
+      );
+      setState(() {
+        for (final scanner in bonded) {
+          _found[scanner.id] = scanner;
+        }
+      });
+    } on NetumException catch (error) {
+      widget.state.log('bondedScanners ✗ $error');
+    }
   }
 
   @override
@@ -83,6 +101,46 @@ class _DiscoverPageState extends State<DiscoverPage> {
             ],
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Wrap(
+            spacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              SegmentedButton<NetumTransport>(
+                segments: [
+                  const ButtonSegment(
+                    value: NetumTransport.ble,
+                    label: Text('BLE'),
+                  ),
+                  ButtonSegment(
+                    value: NetumTransport.spp,
+                    label: const Text('SPP'),
+                    enabled: _netum.isSupported(NetumTransport.spp),
+                  ),
+                ],
+                selected: {_transport},
+                onSelectionChanged: (s) => setState(() => _transport = s.first),
+              ),
+              if (_netum.isSupported(NetumTransport.spp)) ...[
+                IconButton(
+                  tooltip: 'Bonded scanners',
+                  icon: const Icon(Icons.link),
+                  onPressed: _showBonded,
+                ),
+                IconButton(
+                  tooltip: 'Pair by scanning',
+                  icon: const Icon(Icons.qr_code_2),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => PairPage(state: widget.state),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
         ListenableBuilder(
           listenable: widget.state,
           builder: (context, _) => SwitchListTile(
@@ -104,7 +162,14 @@ class _DiscoverPageState extends State<DiscoverPage> {
                         : Icons.devices_other,
                   ),
                   title: Text(scanner.name ?? '(no name)'),
-                  subtitle: Text('${scanner.id} · ${scanner.rssi} dBm'),
+                  subtitle: Text(
+                    [
+                      scanner.id,
+                      scanner.transport.name.toUpperCase(),
+                      if (scanner.rssi != null) '${scanner.rssi} dBm',
+                      if (scanner.bonded) 'bonded',
+                    ].join(' · '),
+                  ),
                   trailing: TextButton(
                     onPressed: () => widget.state.run(
                       'connect ${scanner.name ?? scanner.id}',
