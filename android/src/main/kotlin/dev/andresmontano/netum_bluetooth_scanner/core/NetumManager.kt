@@ -1,7 +1,11 @@
 package dev.andresmontano.netum_bluetooth_scanner.core
 
 import android.bluetooth.BluetoothAdapter
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.AdapterMonitor
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.PermissionScope
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.Permissions
@@ -25,6 +29,26 @@ class NetumManager private constructor(context: Context) {
     var events: NetumEvents? = null
 
     private val links = LinkedHashMap<String, Link>()
+
+    // Links react to Bluetooth on/off even while Dart is not listening to adapter states.
+    init {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                when (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)) {
+                    BluetoothAdapter.STATE_TURNING_OFF, BluetoothAdapter.STATE_OFF ->
+                        links.values.toList().forEach { it.onAdapterOff() }
+                    BluetoothAdapter.STATE_ON ->
+                        links.values.toList().forEach { it.onAdapterOn() }
+                }
+            }
+        }
+        val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            this.context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            this.context.registerReceiver(receiver, filter)
+        }
+    }
     private var bleScanner: BleScanner? = null
 
     val isDiscovering: Boolean
@@ -54,7 +78,7 @@ class NetumManager private constructor(context: Context) {
     }
 
     /** Connects [id]; returns once the link is ready for data. Idempotent while connected. */
-    suspend fun connect(id: String, transport: Transport, timeoutMs: Long) {
+    suspend fun connect(id: String, transport: Transport, timeoutMs: Long, autoReconnect: Boolean) {
         if (transport == Transport.SPP) {
             throw NetumError(NetumError.UNIMPLEMENTED, "SPP connections arrive in S5")
         }
@@ -68,18 +92,26 @@ class NetumManager private constructor(context: Context) {
             throw NetumError(NetumError.INVALID_ARGUMENT, "Not a Bluetooth address: $id")
         }
         links[id]?.let {
-            if (it.state == LinkState.CONNECTED) return
+            if (it.state == LinkState.CONNECTED) {
+                it.setAutoReconnect(autoReconnect)
+                return
+            }
             throw NetumError(NetumError.BUSY, "$id is already connecting")
         }
 
         val link = BleLink(this, adapter.getRemoteDevice(id))
         register(link)
         try {
-            link.connect(timeoutMs)
+            link.connect(timeoutMs, autoReconnect)
         } catch (e: Exception) {
             unregister(link)
             throw e
         }
+    }
+
+    fun setAutoReconnect(id: String, enabled: Boolean) {
+        val link = links[id] ?: throw NetumError(NetumError.NOT_CONNECTED, "$id is not connected")
+        link.setAutoReconnect(enabled)
     }
 
     fun bleLink(id: String): BleLink {

@@ -248,10 +248,16 @@ class NetumScanner implements DeviceHost {
     String id, {
     required NetumTransport transport,
     String? name,
+    bool autoReconnect = false,
+    ReconnectPolicy reconnectPolicy = const ReconnectPolicy(),
     Duration timeout = const Duration(seconds: 15),
   }) async {
     final handle = device(id, transport: transport, name: name);
-    await handle.connect(timeout: timeout);
+    await handle.connect(
+      autoReconnect: autoReconnect,
+      reconnectPolicy: reconnectPolicy,
+      timeout: timeout,
+    );
     return handle;
   }
 

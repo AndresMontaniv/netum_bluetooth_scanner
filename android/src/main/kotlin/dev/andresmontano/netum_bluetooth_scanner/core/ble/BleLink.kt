@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothStatusCodes
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import dev.andresmontano.netum_bluetooth_scanner.core.Link
 import dev.andresmontano.netum_bluetooth_scanner.core.LinkEvent
 import dev.andresmontano.netum_bluetooth_scanner.core.LinkState
@@ -18,6 +19,8 @@ import dev.andresmontano.netum_bluetooth_scanner.core.NetumError
 import dev.andresmontano.netum_bluetooth_scanner.core.NetumManager
 import dev.andresmontano.netum_bluetooth_scanner.core.Transport
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
@@ -53,8 +56,17 @@ class BleLink(
     private var userDisconnecting = false
     private var gattDropped = false
 
+    // Auto-reconnect: after an unexpected drop, a background `connectGatt(autoConnect = true)`
+    // waits for the scanner to reappear (no scanning, no loop), then the setup runs again.
+    @Volatile
+    private var autoReconnect = false
+    private var reconnecting = false
+    private var reconnectJob: Job? = null
+    private var reconnectStartedAt = 0L
+
     /** Connects and enables notifications. Throws `connection-failed` (status in details). */
-    suspend fun connect(timeoutMs: Long) {
+    suspend fun connect(timeoutMs: Long, autoReconnect: Boolean) {
+        this.autoReconnect = autoReconnect
         setState(LinkState.CONNECTING, userInitiated = true)
         try {
             withTimeout(timeoutMs) {
@@ -137,6 +149,11 @@ class BleLink(
     }
 
     override suspend fun disconnect() {
+        if (reconnecting) {
+            cancelReconnect()
+            finish(userInitiated = true, platformCode = null, message = null)
+            return
+        }
         val gatt = gatt ?: return
         userDisconnecting = true
         setState(LinkState.DISCONNECTING, userInitiated = true)
@@ -147,9 +164,85 @@ class BleLink(
     }
 
     override fun close() {
+        cancelReconnect()
         closeGatt()
         state = LinkState.DISCONNECTED
     }
+
+    override fun setAutoReconnect(enabled: Boolean) {
+        autoReconnect = enabled
+        if (!enabled && reconnecting) {
+            cancelReconnect()
+            finish(userInitiated = true, platformCode = null, message = "Auto-reconnect turned off")
+        }
+    }
+
+    override fun onAdapterOff() {
+        when {
+            reconnecting -> closeGatt() // Paused; re-armed when Bluetooth comes back.
+            state == LinkState.CONNECTED ->
+                if (autoReconnect) beginReconnect(platformCode = null)
+                else finish(userInitiated = false, platformCode = null, message = "Bluetooth turned off")
+        }
+    }
+
+    override fun onAdapterOn() {
+        if (reconnecting && gatt == null) armReconnect()
+    }
+
+    // region Auto-reconnect (main thread)
+
+    private fun beginReconnect(platformCode: Int?) {
+        closeGatt()
+        reconnecting = true
+        reconnectStartedAt = System.currentTimeMillis()
+        // Dart turns this pair into `reconnecting`, keeping the reason of the drop.
+        setState(LinkState.DISCONNECTED, userInitiated = false, platformCode = platformCode)
+        setState(LinkState.CONNECTING, userInitiated = false)
+        armReconnect()
+    }
+
+    private fun armReconnect() {
+        if (!manager.adapterMonitor.isPoweredOn) return
+        gattDropped = false
+        gatt = try {
+            device.connectGatt(manager.context, true, callback, BluetoothDevice.TRANSPORT_LE)
+        } catch (e: SecurityException) {
+            cancelReconnect()
+            finish(userInitiated = false, platformCode = null, message = e.message)
+            null
+        }
+    }
+
+    private fun onReconnected() {
+        reconnectJob = manager.scope.launch {
+            try {
+                setUp()
+                reconnecting = false
+                Log.i(TAG, "$id reconnected after ${System.currentTimeMillis() - reconnectStartedAt} ms")
+                setState(LinkState.CONNECTED, userInitiated = false)
+            } catch (e: NetumError) {
+                retryReconnect()
+            }
+        }
+    }
+
+    private fun retryReconnect() {
+        closeGatt()
+        reconnectJob = manager.scope.launch {
+            delay(RECONNECT_RETRY_MS)
+            if (reconnecting) armReconnect()
+        }
+    }
+
+    private fun cancelReconnect() {
+        reconnecting = false
+        reconnectJob?.cancel()
+        reconnectJob = null
+        closeGatt()
+    }
+
+    // endregion
 
     // region Connect steps
 
@@ -303,7 +396,10 @@ class BleLink(
     private fun onConnectionChange(g: BluetoothGatt, status: Int, newState: Int) {
         if (g !== gatt) return // A GATT we already closed (e.g. before the 133 retry).
         when (newState) {
-            BluetoothProfile.STATE_CONNECTED -> connectSignal?.complete(status)
+            BluetoothProfile.STATE_CONNECTED -> {
+                connectSignal?.complete(status)
+                if (connectSignal == null && reconnecting) onReconnected()
+            }
             BluetoothProfile.STATE_DISCONNECTED -> {
                 // Still opening: report the failure to the connect attempt.
                 connectSignal?.let {
@@ -313,17 +409,27 @@ class BleLink(
                 gattDropped = true
                 queue.fail(NetumError(NetumError.NOT_CONNECTED, "Link dropped (status $status)", status))
                 disconnectSignal?.complete(Unit)
+                if (reconnecting) {
+                    retryReconnect() // Dropped again during the reconnect setup.
+                    return
+                }
                 // During setup the connect attempt reports the failure; during a user disconnect,
                 // disconnect() does. Otherwise the scanner went away: 8 = link lost, 19 = remote
                 // terminated (e.g. after a rename).
                 if (state == LinkState.CONNECTED && !userDisconnecting) {
-                    finish(userInitiated = false, platformCode = status, message = null)
+                    if (autoReconnect) {
+                        beginReconnect(platformCode = status)
+                    } else {
+                        finish(userInitiated = false, platformCode = status, message = null)
+                    }
                 }
             }
         }
     }
 
     companion object {
+        private const val TAG = "NetumBleLink"
+        private const val RECONNECT_RETRY_MS = 1_000L
         private const val STATUS_133 = 133
         private const val STATUS_UNKNOWN = -1
         private const val RETRY_DELAY_MS = 500L

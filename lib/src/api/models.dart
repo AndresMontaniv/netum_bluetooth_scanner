@@ -275,6 +275,15 @@ final class ConnectFailed extends DisconnectReason {
   String toString() => 'ConnectFailed($platformCode, $message)';
 }
 
+/// Auto-reconnect gave up after `ReconnectPolicy.giveUpAfter`.
+final class ReconnectGaveUp extends DisconnectReason {
+  /// Creates the reason.
+  const ReconnectGaveUp();
+
+  @override
+  String toString() => 'ReconnectGaveUp';
+}
+
 /// A command that drops the link (rename, power off, mode switch) was
 /// accepted.
 final class ExpectedAfterCommand extends DisconnectReason {
@@ -350,4 +359,39 @@ class BluetoothInfo {
 
   @override
   String toString() => 'BluetoothInfo($name, $classicAddress, fw $firmware)';
+}
+
+/// How long auto-reconnect keeps waiting for a lost scanner.
+///
+/// Neither platform polls: Android and iOS register one background
+/// "connect when it appears" request, so waiting costs very little. Still,
+/// it gives up after [giveUpAfter] (30 minutes by default, which also covers
+/// the DS5000's 30-minute idle sleep: a scanner woken within that window
+/// reconnects).
+@immutable
+class ReconnectPolicy {
+  /// Gives up after [giveUpAfter] (default 30 minutes).
+  const ReconnectPolicy({
+    Duration this.giveUpAfter = const Duration(minutes: 30),
+  });
+
+  const ReconnectPolicy._unlimited() : giveUpAfter = null;
+
+  /// ⚠️ Never gives up while the app runs. Only for apps that manage
+  /// reconnection themselves (e.g. stop it when the user leaves the scanning
+  /// screen).
+  static const unlimited = ReconnectPolicy._unlimited();
+
+  /// How long to keep trying after the link is lost; `null` = forever.
+  final Duration? giveUpAfter;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ReconnectPolicy && other.giveUpAfter == giveUpAfter;
+
+  @override
+  int get hashCode => giveUpAfter.hashCode;
+
+  @override
+  String toString() => 'ReconnectPolicy(giveUpAfter: $giveUpAfter)';
 }

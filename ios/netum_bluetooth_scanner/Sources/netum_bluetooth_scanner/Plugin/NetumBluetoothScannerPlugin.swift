@@ -87,7 +87,7 @@ public class NetumBluetoothScannerPlugin: NSObject, FlutterPlugin, NetumHostApi,
   func connect(id: String, options: ConnectOptionsMsg) async throws {
     guard options.transport == .ble else { throw NetumError.unsupported("SPP is Android only").pigeon }
     try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-      manager.connect(id: id, timeoutMs: Int(options.timeoutMs)) {
+      manager.connect(id: id, timeoutMs: Int(options.timeoutMs), autoReconnect: options.autoReconnect) {
         continuation.resume(with: $0.mapError(\.pigeon))
       }
     }
@@ -101,7 +101,7 @@ public class NetumBluetoothScannerPlugin: NSObject, FlutterPlugin, NetumHostApi,
   }
 
   func setAutoReconnect(id: String, enabled: Bool) throws {
-    throw NetumError.unimplemented("setAutoReconnect").pigeon
+    try bridge { try manager.setAutoReconnect(id: id, enabled: enabled) }
   }
 
   func write(id: String, bytes: FlutterStandardTypedData) async throws {

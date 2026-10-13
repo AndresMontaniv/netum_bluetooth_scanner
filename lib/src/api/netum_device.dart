@@ -69,6 +69,10 @@ class NetumDevice {
   final _scans = StreamController<ScanEvent>.broadcast();
   String? _name;
   NetumConnectionState _state = NetumConnectionState.disconnected;
+  bool _autoReconnect = false;
+  ReconnectPolicy _reconnectPolicy = const ReconnectPolicy();
+  Timer? _giveUpTimer;
+  bool _givingUp = false;
 
   /// The last known advertised or bonded name.
   String? get name => _name;
@@ -78,6 +82,23 @@ class NetumDevice {
 
   /// Whether the device is connected and ready for commands.
   bool get isConnected => _state == NetumConnectionState.connected;
+
+  /// Whether an unexpected disconnect is followed by an automatic reconnect.
+  bool get autoReconnect => _autoReconnect;
+
+  /// Turns auto-reconnect on or off, also while connected. Turning it off
+  /// while [NetumConnectionState.reconnecting] ends in `disconnected`.
+  set autoReconnect(bool value) {
+    _autoReconnect = value;
+    if (!value) _cancelGiveUp();
+    if (_state == NetumConnectionState.connected ||
+        _state == NetumConnectionState.reconnecting) {
+      unawaited(_setNativeAutoReconnect(enabled: value));
+    }
+  }
+
+  /// How long auto-reconnect keeps trying.
+  ReconnectPolicy get reconnectPolicy => _reconnectPolicy;
 
   /// State changes. Broadcast; survives reconnects.
   Stream<NetumConnectionState> get stateChanges => _states.stream;
@@ -89,11 +110,18 @@ class NetumDevice {
   /// Connects and enables notifications. Completes once the device is ready
   /// for data; does nothing if already connected.
   ///
+  /// With [autoReconnect], an unexpected disconnect (out of range, power
+  /// off, sleep) moves to [NetumConnectionState.reconnecting] and the same
+  /// handle reconnects when the scanner reappears, until
+  /// [ReconnectPolicy.giveUpAfter]. A user [disconnect] never reconnects.
+  ///
   /// Fails fast while Bluetooth is off or unauthorized. Throws
   /// [NetumDeviceBusy] while already connecting,
   /// [NetumMaxConnectionsReached], [NetumPermissionDenied],
   /// [NetumBluetoothUnavailable] or [NetumConnectionFailed].
   Future<void> connect({
+    bool autoReconnect = false,
+    ReconnectPolicy reconnectPolicy = const ReconnectPolicy(),
     Duration timeout = const Duration(seconds: 15),
   }) async {
     await _host.initialize();
@@ -110,19 +138,23 @@ class NetumDevice {
       case AdapterState.locationServicesOff:
         break;
     }
-    if (_state == NetumConnectionState.connecting) {
+    if (_state == NetumConnectionState.connecting ||
+        _state == NetumConnectionState.reconnecting) {
       throw const NetumDeviceBusy();
     }
     final active = _host.knownDevices.where(
       (d) =>
           !identical(d, this) &&
           (d.state == NetumConnectionState.connected ||
-              d.state == NetumConnectionState.connecting),
+              d.state == NetumConnectionState.connecting ||
+              d.state == NetumConnectionState.reconnecting),
     );
     if (active.length >= _host.maxConnections) {
       throw const NetumMaxConnectionsReached();
     }
 
+    _autoReconnect = autoReconnect;
+    _reconnectPolicy = reconnectPolicy;
     _setState(NetumConnectionState.connecting);
     try {
       await _host.transport.connect(
@@ -132,7 +164,7 @@ class NetumDevice {
               ? TransportMsg.ble
               : TransportMsg.spp,
           timeoutMs: timeout.inMilliseconds,
-          autoReconnect: false,
+          autoReconnect: autoReconnect,
           sppInsecureFallback: false,
         ),
       );
@@ -151,9 +183,11 @@ class NetumDevice {
     _markConnected();
   }
 
-  /// Disconnects. User-initiated: never followed by an automatic reconnect.
+  /// Disconnects. User-initiated: never followed by an automatic reconnect;
+  /// also cancels a reconnect in progress.
   Future<void> disconnect() async {
     if (_state == NetumConnectionState.disconnected) return;
+    _cancelGiveUp();
     await _host.transport.disconnect(id);
     // The native link event normally got here first.
     _onDisconnected(userInitiated: true);
@@ -251,6 +285,11 @@ class NetumDevice {
   /// Auto-reconnect is turned off for this handle, since the scanner will
   /// not come back on this transport.
   Future<void> switchMode(NetumMode mode) async {
+    _ensureConnected();
+    if (_autoReconnect) {
+      _autoReconnect = false;
+      await _setNativeAutoReconnect(enabled: false);
+    }
     await _send(NetumCommand.dangerous.mode(mode));
   }
 
@@ -418,8 +457,12 @@ class NetumDevice {
   void handleLinkEvent(LinkStateMsgEvent event) {
     switch (event.state) {
       case LinkStateMsg.connecting:
-        _setState(NetumConnectionState.connecting);
+        // Native reports reconnect attempts as `connecting`.
+        if (_state != NetumConnectionState.reconnecting) {
+          _setState(NetumConnectionState.connecting);
+        }
       case LinkStateMsg.connected:
+        _cancelGiveUp();
         _markConnected();
       case LinkStateMsg.disconnecting:
         _setState(NetumConnectionState.disconnecting);
@@ -459,7 +502,9 @@ class NetumDevice {
     if (_state == NetumConnectionState.disconnected) return;
     final expectedBy = _session.pendingDisconnectCommand;
     final DisconnectReason reason;
-    if (expectedBy != null) {
+    if (_givingUp) {
+      reason = const ReconnectGaveUp();
+    } else if (expectedBy != null) {
       reason = ExpectedAfterCommand(expectedBy);
     } else if (_state == NetumConnectionState.connecting) {
       reason = ConnectFailed(platformCode: platformCode, message: message);
@@ -473,7 +518,47 @@ class NetumDevice {
       reason = LinkLost(platformCode);
     }
     _session.handleDisconnected();
+
+    final lostUnexpectedly =
+        !userInitiated &&
+        _autoReconnect &&
+        (_state == NetumConnectionState.connected ||
+            _state == NetumConnectionState.disconnecting);
+    if (lostUnexpectedly) {
+      _setState(NetumConnectionState.reconnecting, reason: reason);
+      final giveUpAfter = _reconnectPolicy.giveUpAfter;
+      if (giveUpAfter != null) {
+        _giveUpTimer = Timer(giveUpAfter, _giveUp);
+      }
+      return;
+    }
+    _givingUp = false;
     _setState(NetumConnectionState.disconnected, reason: reason);
+  }
+
+  void _giveUp() {
+    _givingUp = true;
+    unawaited(
+      _setNativeAutoReconnect(enabled: false).then((_) {
+        // Native confirms with a `disconnected` event; end here otherwise.
+        if (_state == NetumConnectionState.reconnecting) {
+          _onDisconnected(userInitiated: false);
+        }
+      }),
+    );
+  }
+
+  void _cancelGiveUp() {
+    _giveUpTimer?.cancel();
+    _giveUpTimer = null;
+  }
+
+  Future<void> _setNativeAutoReconnect({required bool enabled}) async {
+    try {
+      await _host.transport.setAutoReconnect(id, enabled: enabled);
+    } on NetumNotConnected {
+      // The link is already gone; nothing to change.
+    }
   }
 
   void _setState(NetumConnectionState state, {DisconnectReason? reason}) {

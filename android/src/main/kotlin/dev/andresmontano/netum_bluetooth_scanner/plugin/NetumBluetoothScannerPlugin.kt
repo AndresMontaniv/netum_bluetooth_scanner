@@ -183,7 +183,7 @@ class NetumBluetoothScannerPlugin :
     override fun bondedDevices(): List<DiscoveredDeviceMsg> = unimplemented("bondedDevices")
 
     override suspend fun connect(id: String, options: ConnectOptionsMsg) = bridge {
-        manager.connect(id, options.transport.toCore(), options.timeoutMs)
+        manager.connect(id, options.transport.toCore(), options.timeoutMs, options.autoReconnect)
     }
 
     override suspend fun disconnect(id: String) = bridge {
@@ -191,7 +191,9 @@ class NetumBluetoothScannerPlugin :
         link.disconnect()
     }
 
-    override fun setAutoReconnect(id: String, enabled: Boolean) = unimplemented("setAutoReconnect")
+    override fun setAutoReconnect(id: String, enabled: Boolean) = bridge {
+        manager.setAutoReconnect(id, enabled)
+    }
 
     override suspend fun write(id: String, bytes: ByteArray) = bridge {
         val link = manager.link(id) ?: throw NetumError(NetumError.NOT_CONNECTED, "$id is not connected")

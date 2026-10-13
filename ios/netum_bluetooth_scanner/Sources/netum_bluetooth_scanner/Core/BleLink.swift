@@ -27,6 +27,15 @@ final class BleLink: NSObject, CBPeripheralDelegate {
   private var pendingReads: [CBUUID: [(Result<Data, NetumError>) -> Void]] = [:]
   private var pendingRssi: [(Result<Int, NetumError>) -> Void] = []
 
+  // Auto-reconnect: after an unexpected drop, a pending `central.connect` waits for the scanner to
+  // reappear (CoreBluetooth keeps it until it succeeds or is cancelled), then the setup runs again.
+  private var autoReconnect = false
+  private var reconnecting = false
+  private var reconnectStartedAt = Date()
+
+  /// Whether a connect or reconnect setup is running.
+  private var settingUp: Bool { connectCompletion != nil || reconnecting }
+
   init(manager: NetumManager, central: CBCentralManager, peripheral: CBPeripheral) {
     self.id = peripheral.identifier.uuidString
     self.manager = manager
@@ -38,7 +47,10 @@ final class BleLink: NSObject, CBPeripheralDelegate {
   // MARK: - Commands (any thread)
 
   /// Called on the manager queue.
-  func connect(timeoutMs: Int, completion: @escaping (Result<Void, NetumError>) -> Void) {
+  func connect(
+    timeoutMs: Int, autoReconnect: Bool, completion: @escaping (Result<Void, NetumError>) -> Void
+  ) {
+    self.autoReconnect = autoReconnect
     connectCompletion = completion
     setState(.connecting, userInitiated: true)
     peripheral.delegate = self
@@ -98,6 +110,10 @@ final class BleLink: NSObject, CBPeripheralDelegate {
       switch self.state {
       case .disconnected:
         completion()
+      case .connecting where self.reconnecting:
+        self.cancelReconnect()
+        self.close(userInitiated: true, platformCode: nil)
+        completion()
       case .connecting:
         self.userDisconnecting = true
         self.failConnect(.connectionFailed("Cancelled"))
@@ -115,6 +131,43 @@ final class BleLink: NSObject, CBPeripheralDelegate {
     }
   }
 
+  func setAutoReconnect(_ enabled: Bool) {
+    queue.async {
+      self.autoReconnect = enabled
+      if !enabled && self.reconnecting {
+        self.cancelReconnect()
+        self.close(userInitiated: true, platformCode: nil)
+      }
+    }
+  }
+
+  /// Bluetooth is back on: re-arm a pending reconnect (iOS drops them when it goes off).
+  func rearmIfReconnecting() {
+    if reconnecting { central.connect(peripheral) }
+  }
+
+  // MARK: - Auto-reconnect (manager queue)
+
+  private func beginReconnect(platformCode: Int?, arm: Bool) {
+    failPending()
+    reconnecting = true
+    reconnectStartedAt = Date()
+    // Dart turns this pair into `reconnecting`, keeping the reason of the drop.
+    setState(.disconnected, userInitiated: false, platformCode: platformCode)
+    setState(.connecting, userInitiated: false)
+    if arm { central.connect(peripheral) }
+  }
+
+  private func retryReconnect() {
+    central.cancelPeripheralConnection(peripheral)
+    queue.asyncAfter(deadline: .now() + 1) { [weak self] in self?.rearmIfReconnecting() }
+  }
+
+  private func cancelReconnect() {
+    reconnecting = false
+    central.cancelPeripheralConnection(peripheral)
+  }
+
   // MARK: - Central callbacks (manager queue)
 
   func didConnect() {
@@ -122,6 +175,10 @@ final class BleLink: NSObject, CBPeripheralDelegate {
   }
 
   func didFailToConnect(_ error: Error?) {
+    if reconnecting && connectCompletion == nil {
+      retryReconnect()
+      return
+    }
     let code = (error as NSError?)?.code
     failConnect(.connectionFailed(error?.localizedDescription ?? "Connect failed", code: code))
   }
@@ -130,6 +187,10 @@ final class BleLink: NSObject, CBPeripheralDelegate {
     let code = (error as NSError?)?.code
     if connectCompletion != nil {
       failConnect(.connectionFailed("Link dropped while connecting", code: code))
+    } else if reconnecting {
+      retryReconnect()  // Dropped again during the reconnect setup.
+    } else if state == .connected && !userDisconnecting && autoReconnect {
+      beginReconnect(platformCode: code, arm: true)
     } else {
       // CBError 6 = connection timeout (link lost), 7 = the scanner closed it.
       close(userInitiated: userDisconnecting, platformCode: userDisconnecting ? nil : code)
@@ -139,6 +200,10 @@ final class BleLink: NSObject, CBPeripheralDelegate {
   func handleBluetoothUnavailable() {
     if connectCompletion != nil {
       failConnect(.bluetoothUnavailable("Bluetooth turned off", state: "poweredOff"))
+    } else if reconnecting {
+      return  // Paused; re-armed when Bluetooth comes back on.
+    } else if state == .connected && autoReconnect {
+      beginReconnect(platformCode: nil, arm: false)
     } else {
       close(userInitiated: false, platformCode: nil)
     }
@@ -168,7 +233,7 @@ final class BleLink: NSObject, CBPeripheralDelegate {
   func peripheral(
     _ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?
   ) {
-    guard service.uuid == dataService, connectCompletion != nil else { return }
+    guard service.uuid == dataService, settingUp else { return }
     if let error {
       failConnect(.connectionFailed("Characteristic discovery failed: \(error.localizedDescription)"))
       return
@@ -189,9 +254,16 @@ final class BleLink: NSObject, CBPeripheralDelegate {
     _ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic,
     error: Error?
   ) {
-    guard characteristic.uuid == notifyCharacteristic?.uuid, connectCompletion != nil else { return }
+    guard characteristic.uuid == notifyCharacteristic?.uuid, settingUp else { return }
     if let error {
       failConnect(.connectionFailed("Enabling notifications failed: \(error.localizedDescription)"))
+      return
+    }
+    if connectCompletion == nil {
+      reconnecting = false
+      let elapsed = Int(Date().timeIntervalSince(reconnectStartedAt) * 1000)
+      NSLog("NetumBleLink \(id) reconnected after \(elapsed) ms")
+      setState(.connected, userInitiated: false)
       return
     }
     connectTimeout?.cancel()
@@ -255,6 +327,10 @@ final class BleLink: NSObject, CBPeripheralDelegate {
   }
 
   private func failConnect(_ error: NetumError) {
+    if reconnecting && connectCompletion == nil {
+      retryReconnect()
+      return
+    }
     guard let completion = connectCompletion else { return }
     connectCompletion = nil
     connectTimeout?.cancel()
@@ -271,6 +347,14 @@ final class BleLink: NSObject, CBPeripheralDelegate {
   /// Reports the disconnect once, fails pending operations and releases the slot.
   private func close(userInitiated: Bool, platformCode: Int?) {
     guard state != .disconnected else { return }
+    failPending()
+    manager.linkClosed(self)
+    setState(.disconnected, userInitiated: userInitiated, platformCode: platformCode)
+    disconnectCompletion?()
+    disconnectCompletion = nil
+  }
+
+  private func failPending() {
     let error = NetumError.notConnected(id)
     pendingWrites.forEach { $0(.failure(error)) }
     pendingWrites.removeAll()
@@ -278,9 +362,5 @@ final class BleLink: NSObject, CBPeripheralDelegate {
     pendingReads.removeAll()
     pendingRssi.forEach { $0(.failure(error)) }
     pendingRssi.removeAll()
-    manager.linkClosed(self)
-    setState(.disconnected, userInitiated: userInitiated, platformCode: platformCode)
-    disconnectCompletion?()
-    disconnectCompletion = nil
   }
 }

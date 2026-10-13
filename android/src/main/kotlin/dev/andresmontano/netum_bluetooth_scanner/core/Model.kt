@@ -42,6 +42,15 @@ interface Link {
     suspend fun write(bytes: ByteArray)
     suspend fun disconnect()
 
+    /** Whether an unexpected disconnect is followed by an automatic reconnect. */
+    fun setAutoReconnect(enabled: Boolean)
+
+    /** Bluetooth turned off: pause or end the link. */
+    fun onAdapterOff()
+
+    /** Bluetooth turned back on: re-arm a pending reconnect. */
+    fun onAdapterOn()
+
     /** Releases platform resources without reporting a state change. */
     fun close()
 }

@@ -112,7 +112,10 @@ final class NetumManager: NSObject, CBCentralManagerDelegate {
 
   // MARK: - Links
 
-  func connect(id: String, timeoutMs: Int, completion: @escaping (Result<Void, NetumError>) -> Void) {
+  func connect(
+    id: String, timeoutMs: Int, autoReconnect: Bool,
+    completion: @escaping (Result<Void, NetumError>) -> Void
+  ) {
     queue.async {
       guard let uuid = UUID(uuidString: id) else {
         completion(.failure(.invalidArgument("Not a peripheral identifier: \(id)")))
@@ -128,7 +131,12 @@ final class NetumManager: NSObject, CBCentralManagerDelegate {
           completion(.failure(error))
         case .success(let central):
           if let existing = self.links[id] {
-            completion(existing.state == .connected ? .success(()) : .failure(.busy("\(id) is already connecting")))
+            if existing.state == .connected {
+              existing.setAutoReconnect(autoReconnect)
+              completion(.success(()))
+            } else {
+              completion(.failure(.busy("\(id) is already connecting")))
+            }
             return
           }
           guard self.links.count < Self.maxLinks else {
@@ -144,7 +152,7 @@ final class NetumManager: NSObject, CBCentralManagerDelegate {
           }
           let link = BleLink(manager: self, central: central, peripheral: peripheral)
           self.links[id] = link
-          link.connect(timeoutMs: timeoutMs, completion: completion)
+          link.connect(timeoutMs: timeoutMs, autoReconnect: autoReconnect, completion: completion)
         }
       }
     }
@@ -155,6 +163,10 @@ final class NetumManager: NSObject, CBCentralManagerDelegate {
       guard let link = links[id] else { throw NetumError.notConnected(id) }
       return link
     }
+  }
+
+  func setAutoReconnect(id: String, enabled: Bool) throws {
+    try link(id).setAutoReconnect(enabled)
   }
 
   /// Called by a link once it is fully closed.
@@ -249,7 +261,9 @@ final class NetumManager: NSObject, CBCentralManagerDelegate {
       stateWaiters.removeAll()
       waiters.forEach { $0(central.state) }
     }
-    if central.state != .poweredOn {
+    if central.state == .poweredOn {
+      links.values.forEach { $0.rearmIfReconnecting() }
+    } else {
       // iOS drops every connection and scan when Bluetooth goes away, without per-peripheral
       // callbacks.
       scanGeneration += 1

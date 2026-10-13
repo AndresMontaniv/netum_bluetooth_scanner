@@ -93,6 +93,7 @@ class FakeTransport extends Fake implements NetumTransportApi {
   @override
   Future<void> connect(String id, ConnectOptionsMsg options) async {
     connects.add(id);
+    connectOptions.add(options);
     if (emitLinkEvents) link(id, LinkStateMsg.connecting, user: true);
     if (connectError case final error?) {
       if (emitLinkEvents) {
@@ -116,6 +117,13 @@ class FakeTransport extends Fake implements NetumTransportApi {
 
   @override
   Future<int> readRssi(String id) async => -48;
+
+  final autoReconnectCalls = <(String, bool)>[];
+  final connectOptions = <ConnectOptionsMsg>[];
+
+  @override
+  Future<void> setAutoReconnect(String id, {required bool enabled}) async =>
+      autoReconnectCalls.add((id, enabled));
 
   /// Device Information values by characteristic; missing ones throw.
   Map<String, String> deviceInformation = {
