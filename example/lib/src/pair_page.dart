@@ -90,6 +90,12 @@ class _PairPageState extends State<PairPage> {
             ),
             onChanged: (_) => setState(() {}),
           ),
+          const SizedBox(height: 8),
+          const Text(
+            'Paired with a phone before? Power-cycle the scanner first: '
+            'it keeps the old pairing after the phone forgets it.',
+            style: TextStyle(fontSize: 12),
+          ),
           const SizedBox(height: 24),
           if (data != null) ...[
             BarcodeWidget(
