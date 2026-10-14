@@ -91,10 +91,10 @@ final scanner = await netum.listenForSppScanner().first;
 await netum.connect(scanner.id, transport: NetumTransport.spp);
 ```
 
-**If the scanner was paired with any phone before**, reset its SPP state first: scan `AT+MODE=2` (HID), then
-`AT+MODE=1` (SPP). Forgetting the scanner in the phone's Bluetooth settings removes only the phone's half of
-the pairing; the scanner keeps its own and then hangs up after dialling in (or refuses other phones). After the
-reset, the scanner dials in, Android shows its pairing prompt, and the plugin connects. Once paired this way, the
+**If the scanner was paired with any phone before**, power-cycle it first (or scan `AT+MODE=2`, then
+`AT+MODE=1`). Forgetting the scanner in the phone's Bluetooth settings removes only the phone's half of the
+pairing; the scanner keeps its own and hangs up right after dialling in. After the power-cycle, the scanner
+dials in, Android shows its pairing prompt, and the plugin connects. Once paired this way, the
 default flow keeps working even if the phone later forgets the scanner.
 
 ## Debugging with `traffic`

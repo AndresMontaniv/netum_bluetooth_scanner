@@ -226,8 +226,8 @@ class NetumScanner implements DeviceHost {
   ///
   /// A scanner that was paired with any phone before keeps its half of the
   /// pairing even after the phone forgets it, and then hangs up right after
-  /// dialling in. Reset its SPP state first by scanning `AT+MODE=2`, then
-  /// `AT+MODE=1`.
+  /// dialling in. Power-cycle it first (or scan `AT+MODE=2`, then
+  /// `AT+MODE=1`).
   ///
   /// Android only: throws [NetumUnsupportedTransport] elsewhere.
   Stream<DiscoveredScanner> listenForSppScanner({
