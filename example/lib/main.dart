@@ -46,6 +46,15 @@ class _ExampleAppState extends State<ExampleApp> {
         child: Scaffold(
           appBar: AppBar(
             title: const Text('NETUM scanner example'),
+            actions: [
+              Builder(
+                builder: (context) => IconButton(
+                  tooltip: 'About',
+                  icon: const Icon(Icons.help_outline),
+                  onPressed: () => _showAbout(context),
+                ),
+              ),
+            ],
             bottom: TabBar(
               isScrollable: true,
               tabs: [
@@ -59,4 +68,22 @@ class _ExampleAppState extends State<ExampleApp> {
       ),
     );
   }
+
+  void _showAbout(BuildContext context) => showAboutDialog(
+    context: context,
+    applicationName: 'NETUM scanner example',
+    applicationLegalese:
+        'MIT license. Not affiliated with or endorsed by NETUM.',
+    children: const [
+      SizedBox(height: 16),
+      Text(
+        'Demonstrates the netum_bluetooth_scanner plugin.\n\n'
+        'Status: Bluetooth, permissions and Location.\n'
+        'Discover: find BLE or SPP scanners and connect; pair by scanning.\n'
+        'Devices: connected and saved scanners, auto-reconnect, rename.\n'
+        'Scans: every barcode, from every scanner.\n'
+        'Console: settings, queries and the traffic log.',
+      ),
+    ],
+  );
 }

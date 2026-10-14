@@ -1,24 +1,18 @@
-## 0.0.1-dev
+## 0.1.0
 
-* Project scaffold: package metadata, MIT license, lints, protocol docs in `doc/`.
-* Pigeon contract between Dart and the native byte pipes (Android, iOS); adapter state works end-to-end.
-* Protocol core (pure Dart, no device needed): frame encoder, reassembler, packet classifier, decoder,
-  and a per-device session with a one-at-a-time command queue.
-* `NetumCommand` catalog with validated builders, `CommandResult`, `BatteryInfo`, `AdapterState` and the
-  `NetumException` hierarchy.
-* Android BLE: permissions, adapter and Location state, discovery (NETUM filter, throttle-safe), connections
-  with a GATT operation queue, several scanners at once, connections that survive a Dart hot restart.
-* Public API: `NetumScanner` (discover, connect, global `scans` / `connectionEvents`) and `NetumDevice`
-  (per-device streams, `triggerScan`, `beep`, `getBattery`, `getFirmwareVersion`, `send`, `sendRaw`).
-* iOS BLE: the Bluetooth prompt appears only when the app asks (permissions, discovery or connect), discovery,
-  connections (also to saved scanners without discovery), several scanners at once, hot-restart survival.
-* `NetumDevice.getDeviceInfo()` (Device Information Service; shows the Classic MAC even on iOS).
-* Typed settings and queries (volume, tone, vibration, command beep, scan mode, sleep, terminator, engine,
-  stored count, Bluetooth info), rename (`setName`), `switchMode`, experimental inventory mode.
-* Auto-reconnect (`connect(autoReconnect: true)`, gives up after 30 minutes by default) and saved scanners
-  with `restoreSaved` (most recent first, or all), stored natively.
-* Opt-in `traffic` stream for debugging.
-* Android SPP (Classic Bluetooth): discovery (bonded first, then live), `bondedScanners`, connect with the OS
-  pairing prompt on first use, auto-reconnect with backoff, `switchMode` between SPP and BLE, and optional
-  pair by scanning (`listenForSppScanner`, `sppPairingBarcodeData`).
-* Example app with Status, Discover, Devices, Scans and Console tabs.
+First release. Developed and hardware-tested with the NETUM DS5000.
+
+* **BLE on Android and iOS, SPP (Classic Bluetooth) on Android.**
+* **Discovery:** NETUM filter or everything nearby; SPP lists bonded scanners first, then live results.
+  Permission, Bluetooth and Location state with typed errors.
+* **Connections:** several scanners at once, one global `scans` stream plus per-device streams, connection
+  events with the reason for each disconnect. Connections survive a Dart hot restart.
+* **SPP pairing:** the OS pairing prompt on first connect, and the optional "pair by scanning" flow
+  (`listenForSppScanner`, `sppPairingBarcodeData`).
+* **Commands:** typed helpers (trigger, beep, battery, firmware, volume, tone, vibration, command beep,
+  scan mode, sleep, terminator, power off, rename, mode switch, device and Bluetooth info, inventory mode),
+  the `NetumCommand` catalog, and `sendRaw`. One command at a time per scanner, queued.
+* **Auto-reconnect** (opt in per connection; gives up after 30 minutes by default) and **saved scanners**
+  with `restoreSaved` (most recent first, or all), stored natively or in your own `NetumStore`.
+* **Debugging:** opt-in `traffic` stream with every packet classified.
+* Example app with Status, Discover, Devices, Scans and Console tabs, and a pair-by-scanning screen.
