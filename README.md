@@ -91,10 +91,11 @@ final scanner = await netum.listenForSppScanner().first;
 await netum.connect(scanner.id, transport: NetumTransport.spp);
 ```
 
-Pair by scanning is **best effort**: it depends on the scanner's firmware state. In testing, a DS5000 dialled
-in, made one service lookup and hung up, with the vendor's own app too. Afterwards, the units that had scanned
-the barcode refused other phones until they were power-cycled or their SPP mode barcode was scanned again.
-Prefer the default flow.
+**If the scanner was paired with any phone before**, reset its SPP state first: scan `AT+MODE=2` (HID), then
+`AT+MODE=1` (SPP). Forgetting the scanner in the phone's Bluetooth settings removes only the phone's half of
+the pairing; the scanner keeps its own and then hangs up after dialling in (or refuses other phones). After the
+reset, the scanner dials in, Android shows its pairing prompt, and the plugin connects. Once paired this way, the
+default flow keeps working even if the phone later forgets the scanner.
 
 ## Debugging with `traffic`
 

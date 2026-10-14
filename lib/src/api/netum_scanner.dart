@@ -222,10 +222,13 @@ class NetumScanner implements DeviceHost {
   /// after [timeout] or on [stopListeningForSppScanner].
   ///
   /// The default SPP flow, [discover] with [NetumTransport.spp] and then
-  /// connect (which shows the OS pairing prompt), does not need this and is
-  /// preferred: this flow is best effort. Some DS5000 units dial in, make one
-  /// service lookup and hang up (also with the vendor's app), and then refuse
-  /// other phones until power-cycled.
+  /// connect (which shows the OS pairing prompt), does not need this.
+  ///
+  /// A scanner that was paired with any phone before keeps its half of the
+  /// pairing even after the phone forgets it, and then hangs up right after
+  /// dialling in. Reset its SPP state first by scanning `AT+MODE=2`, then
+  /// `AT+MODE=1`.
+  ///
   /// Android only: throws [NetumUnsupportedTransport] elsewhere.
   Stream<DiscoveredScanner> listenForSppScanner({
     Duration timeout = const Duration(minutes: 2),
