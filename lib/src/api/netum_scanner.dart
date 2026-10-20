@@ -478,6 +478,20 @@ class NetumScanner implements DeviceHost {
     (saved) => saved.where((s) => s.id != id).toList(),
   );
 
+  /// [saved] minus SPP scanners that are no longer paired with the phone:
+  /// connecting them would show the OS pairing prompt.
+  Future<List<SavedScanner>> _withoutUnpairedSpp(
+    List<SavedScanner> saved,
+  ) async {
+    if (!saved.any((s) => s.transport == NetumTransport.spp)) return saved;
+    final paired = {for (final d in await transport.bondedDevices()) d.id};
+    return [
+      for (final entry in saved)
+        if (entry.transport != NetumTransport.spp || paired.contains(entry.id))
+          entry,
+    ];
+  }
+
   /// Reconnects saved scanners, each with its saved reconnect settings.
   /// Call it when the app is ready (e.g. at startup); the plugin never
   /// reconnects saved scanners by itself.
@@ -485,12 +499,16 @@ class NetumScanner implements DeviceHost {
   /// Returns the devices that are connected afterwards. Scanners that are
   /// off or out of range are skipped; adapter and permission errors are
   /// thrown.
+  ///
+  /// SPP scanners the phone is no longer paired with (e.g. forgotten in the
+  /// Bluetooth settings) are skipped too, so no pairing prompt appears at
+  /// startup. They stay saved: once paired again, they are restored.
   Future<List<NetumDevice>> restoreSaved({
     RestoreStrategy strategy = RestoreStrategy.firstAvailable,
     Duration timeout = const Duration(seconds: 10),
   }) async {
     await initialize();
-    final saved = await savedScanners();
+    final saved = await _withoutUnpairedSpp(await savedScanners());
     Future<NetumDevice?> attempt(SavedScanner entry) async {
       final handle = device(
         entry.id,

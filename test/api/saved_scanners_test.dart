@@ -7,12 +7,28 @@ import '../helpers/fake_transport.dart';
 const _a = 'DD:0D:30:60:B4:2C';
 const _b = 'DD:0D:30:60:B5:1D';
 const _c = 'DD:0D:30:53:36:AF';
+const _sppA = 'DC:0D:30:60:B4:2C';
+const _sppB = 'DC:0D:30:60:B5:1D';
 
 /// A transport where only [reachable] devices connect.
 class _PickyTransport extends FakeTransport {
   _PickyTransport(this.reachable);
 
   final Set<String> reachable;
+
+  /// SPP devices the phone is paired with.
+  final paired = <String>{};
+
+  @override
+  Future<List<DiscoveredDeviceMsg>> bondedDevices() async => [
+    for (final id in paired)
+      DiscoveredDeviceMsg(
+        id: id,
+        transport: TransportMsg.spp,
+        bonded: true,
+        serviceUuids: const [],
+      ),
+  ];
 
   @override
   Future<void> connect(String id, ConnectOptionsMsg options) async {
@@ -168,6 +184,30 @@ void main() {
       final restored = await netum.restoreSaved(strategy: RestoreStrategy.all);
 
       expect(restored.map((d) => d.id).toSet(), {_a, _c});
+    });
+
+    test('skips saved SPP scanners that are no longer paired', () async {
+      final picky = _PickyTransport({_a, _sppA, _sppB});
+      netum = NetumScanner.withTransport(picky);
+      for (final (id, transport) in [
+        (_sppA, NetumTransport.spp),
+        (_sppB, NetumTransport.spp),
+        (_a, NetumTransport.ble),
+      ]) {
+        await netum.connect(id, transport: transport);
+        await netum.device(id, transport: transport).disconnect();
+      }
+      picky
+        ..connects.clear()
+        // The user forgot _sppB in the Bluetooth settings.
+        ..paired.add(_sppA);
+
+      final restored = await netum.restoreSaved(strategy: RestoreStrategy.all);
+
+      expect(restored.map((d) => d.id).toSet(), {_a, _sppA});
+      expect(picky.connects, isNot(contains(_sppB)));
+      // Still saved: restored again once it is paired.
+      expect((await netum.savedScanners()).map((s) => s.id), contains(_sppB));
     });
 
     test('nothing saved restores nothing', () async {

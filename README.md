@@ -145,6 +145,9 @@ final saved = await netum.savedScanners();
 await netum.forgetScanner(saved.first.id);
 ```
 
+`restoreSaved` skips saved SPP scanners that the phone is no longer paired with (forgotten in the Bluetooth
+settings), so no pairing prompt appears at startup; they stay saved and come back once paired again.
+
 The list is stored natively (SharedPreferences / UserDefaults). To use your own storage, set
 `netum.store` to a `NetumStore` before the first connect.
 
