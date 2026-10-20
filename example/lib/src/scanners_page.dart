@@ -26,6 +26,7 @@ class _ScannersPageState extends State<ScannersPage> {
   NetumTransport _transport = NetumTransport.ble;
   StreamSubscription<DiscoveredScanner>? _discovery;
   StreamSubscription<ConnectionEvent>? _connections;
+  late final AppLifecycleListener _lifecycle;
 
   AppState get _state => widget.state;
   NetumScanner get _netum => _state.netum;
@@ -38,11 +39,14 @@ class _ScannersPageState extends State<ScannersPage> {
     _connections = _netum.connectionEvents.listen((event) {
       if (event.state == NetumConnectionState.connected) unawaited(_reload());
     });
+    // Pairings change outside the app (Settings → Bluetooth).
+    _lifecycle = AppLifecycleListener(onResume: () => unawaited(_reload()));
     unawaited(_reload());
   }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     unawaited(_discovery?.cancel());
     unawaited(_connections?.cancel());
     super.dispose();
@@ -67,6 +71,7 @@ class _ScannersPageState extends State<ScannersPage> {
   }
 
   void _scan() {
+    unawaited(_reload());
     unawaited(_discovery?.cancel());
     setState(_found.clear);
     _state.log('discover ${_transport.name} ${_filter.name}');
