@@ -276,8 +276,10 @@ your product catalog).
 **Does it work in the background?** Yes, while the OS keeps the app running. On iOS, declare the Bluetooth
 background mode. See [Background](#background).
 
-## Protocol documentation
+## Documentation
 
+- [Using the example app](doc/example_app.md): every control in the example, the API behind it, and what a DS5000
+  actually does
 - [Wire protocol](doc/protocol.md)
 - [Command catalog](doc/commands.md)
 
