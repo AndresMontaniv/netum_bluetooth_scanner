@@ -78,12 +78,29 @@ class NetumScanner implements DeviceHost {
       ]);
     }
     _onAdapterState(await transport.adapterState());
-    for (final link in await transport.initialize()) {
+    final links = await transport.initialize();
+    if (links.isEmpty) return;
+    // The platform may not know the name (Android's name cache can be empty
+    // for a scanner that reconnected without discovery); the saved list does.
+    final savedNames = await _savedNames();
+    for (final link in links) {
+      final name = link.name ?? savedNames[link.id];
       _deviceFor(
         link.id,
         _transportOf(link.transport),
-        name: link.name,
-      ).adoptConnectedLink(name: link.name);
+        name: name,
+      ).adoptConnectedLink(name: name);
+    }
+  }
+
+  Future<Map<String, String?>> _savedNames() async {
+    try {
+      return {
+        for (final saved in decodeSavedScanners(await store.load()))
+          saved.id: saved.name,
+      };
+    } on Object {
+      return const {}; // Names are a nicety; never fail initialize over them.
     }
   }
 

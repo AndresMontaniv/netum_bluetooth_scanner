@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:netum_bluetooth_scanner/netum_bluetooth_scanner.dart';
+import 'package:netum_bluetooth_scanner/src/api/saved_scanners.dart'
+    show encodeSavedScanners;
 import 'package:netum_bluetooth_scanner/src/generated/netum_api.g.dart';
 import 'package:netum_bluetooth_scanner/src/protocol/frame.dart';
 
@@ -77,6 +79,25 @@ void main() {
       transport.receive(_id1, _barcode);
       await pumpEventQueue();
       expect(scans.single.text, '7771609001660');
+    });
+
+    test('a re-adopted link without a name takes the saved name', () async {
+      transport
+        ..activeLinks = [
+          ActiveLinkMsg(id: _id1, transport: TransportMsg.ble),
+        ]
+        ..savedJson = encodeSavedScanners([
+          SavedScanner(
+            id: _id1,
+            transport: NetumTransport.ble,
+            name: 'Netum-03',
+            lastConnected: DateTime(2026, 10, 20),
+          ),
+        ]);
+
+      await netum.initialize();
+
+      expect(netum.connectedDevices.single.name, 'Netum-03');
     });
   });
 
