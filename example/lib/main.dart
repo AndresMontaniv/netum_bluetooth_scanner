@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:netum_bluetooth_scanner/netum_bluetooth_scanner.dart';
 import 'package:netum_bluetooth_scanner_example/src/app_state.dart';
 import 'package:netum_bluetooth_scanner_example/src/console_page.dart';
-import 'package:netum_bluetooth_scanner_example/src/devices_page.dart';
-import 'package:netum_bluetooth_scanner_example/src/discover_page.dart';
+import 'package:netum_bluetooth_scanner_example/src/scanners_page.dart';
 import 'package:netum_bluetooth_scanner_example/src/scans_page.dart';
 import 'package:netum_bluetooth_scanner_example/src/status_page.dart';
 
@@ -33,8 +32,7 @@ class _ExampleAppState extends State<ExampleApp> {
   Widget build(BuildContext context) {
     final tabs = <(String, IconData, Widget)>[
       ('Status', Icons.info_outline, StatusPage(state: _state)),
-      ('Discover', Icons.search, DiscoverPage(state: _state)),
-      ('Devices', Icons.devices, DevicesPage(state: _state)),
+      ('Scanners', Icons.bluetooth_searching, ScannersPage(state: _state)),
       ('Scans', Icons.qr_code, ScansPage(state: _state)),
       ('Console', Icons.terminal, ConsolePage(state: _state)),
     ];
@@ -79,8 +77,8 @@ class _ExampleAppState extends State<ExampleApp> {
       Text(
         'Demonstrates the netum_bluetooth_scanner plugin.\n\n'
         'Status: Bluetooth, permissions and Location.\n'
-        'Discover: find BLE or SPP scanners and connect; pair by scanning.\n'
-        'Devices: connected and saved scanners, auto-reconnect, rename.\n'
+        'Scanners: your scanners (connected, saved, paired) and the ones '
+        'nearby; connect, rename, auto-reconnect, pair by scanning.\n'
         'Scans: every barcode, from every scanner.\n'
         'Console: settings, queries and the traffic log.',
       ),

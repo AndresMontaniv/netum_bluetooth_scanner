@@ -24,7 +24,7 @@ class AppState extends ChangeNotifier {
 
   final NetumScanner netum;
 
-  /// Auto-reconnect for new connections (Discover tab).
+  /// Auto-reconnect for new connections (Scanners tab).
   bool autoReconnect = true;
 
   bool get trafficLogEnabled => netum.trafficLogEnabled;
