@@ -14,5 +14,8 @@ First release. Developed and hardware-tested with the NETUM DS5000.
   the `NetumCommand` catalog, and `sendRaw`. One command at a time per scanner, queued.
 * **Auto-reconnect** (opt in per connection; gives up after 30 minutes by default) and **saved scanners**
   with `restoreSaved` (most recent first, or all), stored natively or in your own `NetumStore`.
+* **Background:** scans keep reaching your listeners while the app is in the background (Android out of the
+  box; iOS with the `bluetooth-central` background mode). See the README.
 * **Debugging:** opt-in `traffic` stream with every packet classified.
-* Example app with Status, Discover, Devices, Scans and Console tabs, and a pair-by-scanning screen.
+* Example app with Status, Scanners, Scans and Console tabs, a pair-by-scanning screen, and a guide to every
+  control (`doc/example_app.md`).
