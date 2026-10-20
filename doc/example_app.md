@@ -54,6 +54,9 @@ connecting, or **Stop** while it is reconnecting. Tap a tile for:
 | Forget | `netum.forgetScanner(id)` | Removes it from the saved list (not the OS pairing). |
 | ⟲ Restore (section header) | `restoreSaved(strategy: …)` | **First available**: the most recent saved scanner that is in range. **All**: every saved scanner, up to max connections. No discovery needed. |
 
+When a scan finds a scanner that is already in My scanners but not connected, its tile is marked **in range**
+(with the signal strength) and the Available section says how many it found there.
+
 **Available** shows what the current scan finds that isn't already in My scanners. Tap **Connect**; once it is
 connected it moves up to My scanners. Over SPP, the first connect shows Android's pairing prompt.
 

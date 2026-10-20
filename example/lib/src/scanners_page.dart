@@ -208,6 +208,7 @@ class _ScannersPageState extends State<ScannersPage> {
         final available =
             _found.values.where((s) => !mineIds.contains(s.id)).toList()
               ..sort((a, b) => (b.rssi ?? -999).compareTo(a.rssi ?? -999));
+        final foundMine = _found.keys.where(mineIds.contains).length;
         return ListView(
           children: [
             _header(),
@@ -246,6 +247,11 @@ class _ScannersPageState extends State<ScannersPage> {
                     : 'Nothing new found.',
               ),
             for (final scanner in available) _availableTile(scanner),
+            if (foundMine > 0)
+              _Hint(
+                'Also found $foundMine already in My scanners '
+                '(marked "in range").',
+              ),
           ],
         );
       },
@@ -340,23 +346,48 @@ class _ScannersPageState extends State<ScannersPage> {
     final device = entry.device;
     final connected = entry.state == NetumConnectionState.connected;
     final reason = _state.lastReason[entry.id];
+    final colors = Theme.of(context).colorScheme;
+    // The current scan found it: it is nearby and ready to connect.
+    final found = entry.state == NetumConnectionState.disconnected
+        ? _found[entry.id]
+        : null;
     return ExpansionTile(
       key: ValueKey('mine-${entry.id}'),
       leading: Icon(
-        connected ? Icons.bluetooth_connected : Icons.bluetooth,
-        color: connected ? Theme.of(context).colorScheme.primary : null,
+        connected
+            ? Icons.bluetooth_connected
+            : found != null
+            ? Icons.bluetooth_searching
+            : Icons.bluetooth,
+        color: connected || found != null ? colors.primary : null,
       ),
       title: _TitleWithBadge(entry.name ?? entry.id, entry.transport),
-      subtitle: Text(
-        [
-          entry.id,
-          [
-            _stateLabel(entry),
-            if (entry.saved != null) 'saved',
-            if (entry.paired) 'paired',
-            if (!connected && reason != null) 'last: $reason',
-          ].join(' · '),
-        ].join('\n'),
+      subtitle: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(text: '${entry.id}\n'),
+            if (found != null)
+              TextSpan(
+                text: found.rssi == null
+                    ? 'in range'
+                    : 'in range · ${found.rssi} dBm',
+                style: TextStyle(
+                  color: colors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            else
+              TextSpan(text: _stateLabel(entry)),
+            TextSpan(
+              text: [
+                '',
+                if (entry.saved != null) 'saved',
+                if (entry.paired) 'paired',
+                if (!connected && reason != null) 'last: $reason',
+              ].join(' · '),
+            ),
+          ],
+        ),
       ),
       trailing: _myScannerAction(entry),
       children: [
