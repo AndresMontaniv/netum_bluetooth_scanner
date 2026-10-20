@@ -40,7 +40,9 @@ Your scanners and the ones nearby, like the phone's Bluetooth settings.
 
 **My scanners** lists every scanner you know: connected ones, saved ones (every successful connect is
 remembered, see `savedScanners()`), and on Android the scanners paired with the phone over SPP
-(`bondedScanners()`). The button on the right follows the state: **Connect**, **Disconnect**, a spinner while
+(`bondedScanners()`). For SPP the phone's pairing list is the truth: a saved SPP scanner whose pairing was
+removed in the OS settings is left out until it is paired again. A coloured **BLE** / **SPP** badge marks each
+tile's transport. The button on the right follows the state: **Connect**, **Disconnect**, a spinner while
 connecting, or **Stop** while it is reconnecting. Tap a tile for:
 
 | Control | API | Notes |

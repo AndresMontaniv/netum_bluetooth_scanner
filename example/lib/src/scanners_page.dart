@@ -145,7 +145,16 @@ class _ScannersPageState extends State<ScannersPage> {
         entries[device.id] = _Entry.of(device);
       }
     }
+    final pairedIds = {for (final paired in _paired) paired.id};
     for (final saved in _saved) {
+      // For SPP the OS pairing list is the truth: a saved scanner whose
+      // pairing was removed needs the pairing prompt again, so it belongs
+      // under "Available" until it is paired.
+      if (saved.transport == NetumTransport.spp &&
+          !pairedIds.contains(saved.id) &&
+          !entries.containsKey(saved.id)) {
+        continue;
+      }
       entries.update(
         saved.id,
         (entry) => entry.copyWith(saved: saved),
@@ -337,10 +346,10 @@ class _ScannersPageState extends State<ScannersPage> {
         connected ? Icons.bluetooth_connected : Icons.bluetooth,
         color: connected ? Theme.of(context).colorScheme.primary : null,
       ),
-      title: Text(entry.name ?? entry.id),
+      title: _TitleWithBadge(entry.name ?? entry.id, entry.transport),
       subtitle: Text(
         [
-          '${entry.id} · ${entry.transport.name.toUpperCase()}',
+          entry.id,
           [
             _stateLabel(entry),
             if (entry.saved != null) 'saved',
@@ -433,11 +442,10 @@ class _ScannersPageState extends State<ScannersPage> {
       leading: Icon(
         scanner.likelyNetum ? Icons.qr_code_scanner : Icons.devices_other,
       ),
-      title: Text(scanner.name ?? '(no name)'),
+      title: _TitleWithBadge(scanner.name ?? '(no name)', scanner.transport),
       subtitle: Text(
         [
           scanner.id,
-          scanner.transport.name.toUpperCase(),
           if (scanner.rssi != null) '${scanner.rssi} dBm',
           if (scanner.bonded) 'paired',
         ].join(' · '),
@@ -504,6 +512,43 @@ class _Entry {
         saved: saved ?? this.saved,
         paired: paired ?? this.paired,
       );
+}
+
+/// The scanner's name with a coloured BLE / SPP badge in front, so two
+/// entries for the same scanner are easy to tell apart.
+class _TitleWithBadge extends StatelessWidget {
+  const _TitleWithBadge(this.title, this.transport);
+
+  final String title;
+  final NetumTransport transport;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final (background, foreground) = transport == NetumTransport.ble
+        ? (colors.primaryContainer, colors.onPrimaryContainer)
+        : (colors.tertiaryContainer, colors.onTertiaryContainer);
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            transport.name.toUpperCase(),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: foreground,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(child: Text(title, overflow: TextOverflow.ellipsis)),
+      ],
+    );
+  }
 }
 
 class _Hint extends StatelessWidget {
