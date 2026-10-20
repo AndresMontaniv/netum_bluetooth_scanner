@@ -221,8 +221,9 @@ plugin doesn't apply. For HID scanners, see [`barcode_hid_listener`](https://pub
 
 ## FAQ
 
-**Android connect fails with status 133.** A generic Android BLE error (`NetumConnectionFailed`,
-`platformCode: 133`), usually transient: retry the connect. If it keeps happening, turn Bluetooth off and on.
+**Android connect fails with status 133.** A generic Android BLE error, usually transient. The plugin already
+retries once by itself; if the retry fails too, you get `NetumConnectionFailed` with `platformCode: 133`. Try
+again, and if it keeps happening, turn Bluetooth off and on.
 
 **Discovery finds nothing on Android.** Check that the Location setting is on (`NetumLocationServicesOff`) and the
 Location permission is granted. A scanner connected to another phone usually stops advertising.
