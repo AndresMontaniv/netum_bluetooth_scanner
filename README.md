@@ -15,8 +15,8 @@ Android. Scan streams, several scanners at once, typed commands, auto-reconnect 
 whatever screen or text field has focus, and the app can talk back to the scanner: beep, trigger a scan,
 read the battery, change settings.
 
-**It isn't** a keyboard (HID) listener, a USB / 2.4 GHz dongle driver, or a camera scanner. It also doesn't
-run in the background yet: connections live while the app is in the foreground.
+**It isn't** a keyboard (HID) listener, a USB / 2.4 GHz dongle driver, or a camera scanner. It keeps working
+while your app is in the background (see [Background](#background)), but not after the OS ends the app.
 
 ## Compatibility
 
@@ -69,6 +69,9 @@ Add the Bluetooth usage description to `ios/Runner/Info.plist`:
 
 The Bluetooth permission prompt appears only when your app first calls `requestPermissions`, `discover` or
 `connect`, never at launch.
+
+To keep receiving scans while the app is in the background (screen locked, another app open), also declare the
+Bluetooth background mode; see [Background](#background).
 
 ## Quick start
 
@@ -144,6 +147,38 @@ await netum.forgetScanner(saved.first.id);
 
 The list is stored natively (SharedPreferences / UserDefaults). To use your own storage, set
 `netum.store` to a `NetumStore` before the first connect.
+
+## Background
+
+The connection stays up when the user locks the screen or switches apps, and scans keep reaching your `scans`
+listeners: a screen that is still in the navigation stack keeps its subscription, so your handler runs (Flutter
+draws the result when the app returns).
+
+| | What happens to scans while the app is in the background |
+|---|---|
+| **Android** | Works out of the box. Delivered live; after about a minute Android may freeze the app, and scans made while it is frozen are queued and delivered in order when the app returns. |
+| **iOS** | Needs the Bluetooth background mode, otherwise scans made while the app isn't on screen are **lost** (iOS suspends the app within seconds). With it, iOS wakes the app for each scan and delivers it live. |
+
+iOS setup, in `ios/Runner/Info.plist`:
+
+```xml
+<key>UIBackgroundModes</key>
+<array>
+  <string>bluetooth-central</string>
+</array>
+```
+
+App Store review asks apps that declare it to explain why; a barcode scanner app is a standard case.
+
+Limits:
+
+- Nothing survives the OS ending the app (memory pressure, the user swiping it away). The scanner disconnects;
+  use [saved scanners](#saved-devices-and-auto-reconnect) to reconnect on the next launch.
+- On Android, scans queued while the app was frozen arrive when it returns, so their `timestamp` is the return
+  time, not the scan time.
+
+Tested on a Samsung A24 (Android 16) and an iPhone 16 Pro Max (iOS 26): locked screen, another app in front, and
+about 10 minutes on the home screen.
 
 ## Commands
 
@@ -238,7 +273,8 @@ pairing. Power-cycle it, or scan `AT+MODE=2` then `AT+MODE=1`, and pair again.
 blurry code can decode to another valid number. Validate critical codes against your own data (for example
 your product catalog).
 
-**Does it work in the background?** Not in 0.1.0: connections live while the app is in the foreground.
+**Does it work in the background?** Yes, while the OS keeps the app running. On iOS, declare the Bluetooth
+background mode. See [Background](#background).
 
 ## Protocol documentation
 
