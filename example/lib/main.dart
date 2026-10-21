@@ -61,7 +61,14 @@ class _ExampleAppState extends State<ExampleApp> {
               ],
             ),
           ),
-          body: TabBarView(children: [for (final (_, _, page) in tabs) page]),
+          // Android 15+ draws edge to edge: keep the content clear of the
+          // navigation bar.
+          body: SafeArea(
+            top: false,
+            child: TabBarView(
+              children: [for (final (_, _, page) in tabs) page],
+            ),
+          ),
         ),
       ),
     );

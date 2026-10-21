@@ -7,6 +7,23 @@
 Flutter plugin for NETUM Bluetooth barcode scanners: BLE on Android and iOS, SPP (Classic Bluetooth) on
 Android. Scan streams, several scanners at once, typed commands, auto-reconnect and saved scanners.
 
+<img src="https://raw.githubusercontent.com/AndresMontaniv/netum_bluetooth_scanner/main/doc/images/netum_ds5000.jpg" alt="A NETUM DS5000 barcode scanner in its charging base" width="260">
+
+*Tested with a NETUM DS5000.*
+
+- **One stream for every scanner:** `netum.scans` delivers each barcode with the scanner that read it.
+- **Several scanners at once**, over BLE (Android, iOS) and SPP (Android), even mixed.
+- **Talk back:** beep, trigger a scan, read the battery, change settings, with typed commands.
+- **Keeps working:** auto-reconnect after a drop, saved scanners to restore at startup, and scans while the app
+  is in the background.
+- **Debuggable:** an opt-in traffic log shows every packet, classified.
+
+| Scanners | Scans | Console |
+|:---:|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/AndresMontaniv/netum_bluetooth_scanner/main/doc/screenshots/scanners.webp" alt="Scanners tab: connected, saved and paired scanners" width="220"> | <img src="https://raw.githubusercontent.com/AndresMontaniv/netum_bluetooth_scanner/main/doc/screenshots/scans.webp" alt="Scans tab: barcodes with their scanner and time" width="220"> | <img src="https://raw.githubusercontent.com/AndresMontaniv/netum_bluetooth_scanner/main/doc/screenshots/console.webp" alt="Console tab: settings, queries and their results" width="220"> |
+
+*Screenshots of the [example app](example/); every control is explained in its [guide](doc/example_app.md).*
+
 > **Not affiliated with or endorsed by NETUM.** "NETUM" is used only to identify the hardware this plugin talks to.
 
 ## What it is / isn't
