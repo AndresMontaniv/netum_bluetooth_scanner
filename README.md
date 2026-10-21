@@ -7,6 +7,17 @@
 Flutter plugin for NETUM Bluetooth barcode scanners: BLE on Android and iOS, SPP (Classic Bluetooth) on
 Android. Scan streams, several scanners at once, typed commands, auto-reconnect and saved scanners.
 
+<img src="https://raw.githubusercontent.com/AndresMontaniv/netum_bluetooth_scanner/main/doc/images/netum_ds5000.jpg" alt="A NETUM DS5000 barcode scanner in its charging base" width="260">
+
+*Tested with a NETUM DS5000.*
+
+- **One stream for every scanner:** `netum.scans` delivers each barcode with the scanner that read it.
+- **Several scanners at once**, over BLE (Android, iOS) and SPP (Android), even mixed.
+- **Talk back:** beep, trigger a scan, read the battery, change settings, with typed commands.
+- **Keeps working:** auto-reconnect after a drop, saved scanners to restore at startup, and scans while the app
+  is in the background.
+- **Debuggable:** an opt-in traffic log shows every packet, classified.
+
 > **Not affiliated with or endorsed by NETUM.** "NETUM" is used only to identify the hardware this plugin talks to.
 
 ## What it is / isn't
