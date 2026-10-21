@@ -1,9 +1,16 @@
 name: netum_bluetooth_scanner
 description: "Flutter plugin for NETUM Bluetooth barcode scanners (BLE on Android & iOS, SPP on Android): scan streams, multi-device, commands."
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/AndresMontaniv/netum_bluetooth_scanner
 repository: https://github.com/AndresMontaniv/netum_bluetooth_scanner
 issue_tracker: https://github.com/AndresMontaniv/netum_bluetooth_scanner/issues
+screenshots:
+  - description: "Example app, Scanners tab: connected, saved and paired scanners with BLE and SPP badges; a saved scanner marked in range."
+    path: doc/screenshots/scanners.webp
+  - description: "Example app, Scans tab: every barcode with the scanner that read it, the time and the raw bytes."
+    path: doc/screenshots/scans.webp
+  - description: "Example app, Console tab: typed settings, queries and actions with their results in the log."
+    path: doc/screenshots/console.webp
 topics:
   - barcode
   - scanner
