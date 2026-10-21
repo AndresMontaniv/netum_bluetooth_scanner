@@ -41,7 +41,9 @@ class _PairPageState extends State<PairPage> {
     _state.log('listenForSppScanner');
     _listening = _state.netum.listenForSppScanner().listen(
       (scanner) {
-        _state.log('scanner dialled in: ${scanner.id} "${scanner.name}"');
+        _state.log(
+          'scanner dialled in: ${scanner.id} "${scanner.name ?? '(no name)'}"',
+        );
         setState(
           () => _status = 'Connecting to ${scanner.name ?? scanner.id}…',
         );

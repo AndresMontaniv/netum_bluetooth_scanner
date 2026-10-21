@@ -174,25 +174,28 @@ class _ConsolePageState extends State<ConsolePage> {
           ),
         ],
       ),
-      Row(
-        children: [
-          Expanded(
-            child: Slider(
-              value: _beep,
-              max: 26,
-              divisions: 26,
-              label: '${_beep.round()}',
-              onChanged: (v) => setState(() => _beep = v),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Slider(
+                value: _beep,
+                max: 26,
+                divisions: 26,
+                label: '${_beep.round()}',
+                onChanged: (v) => setState(() => _beep = v),
+              ),
             ),
-          ),
-          OutlinedButton(
-            onPressed: () => _state.run(
-              '$name beep(${_beep.round()})',
-              () => device.beep(_beep.round()),
+            OutlinedButton(
+              onPressed: () => _state.run(
+                '$name beep(${_beep.round()})',
+                () => device.beep(_beep.round()),
+              ),
+              child: Text('Beep ${_beep.round()}'),
             ),
-            child: Text('Beep ${_beep.round()}'),
-          ),
-        ],
+          ],
+        ),
       ),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),

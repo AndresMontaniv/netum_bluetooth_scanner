@@ -81,8 +81,8 @@ class _ScannersPageState extends State<ScannersPage> {
           (scanner) {
             if (!_found.containsKey(scanner.id)) {
               _state.log(
-                'found ${scanner.id} "${scanner.name}" rssi=${scanner.rssi} '
-                'likelyNetum=${scanner.likelyNetum}',
+                'found ${scanner.id} "${scanner.name ?? '(no name)'}" '
+                'rssi=${scanner.rssi} likelyNetum=${scanner.likelyNetum}',
               );
             }
             setState(() => _found[scanner.id] = scanner);
