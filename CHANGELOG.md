@@ -1,6 +1,6 @@
 ## 0.1.1
 
-* README: a photo of the tested hardware (NETUM DS5000) and a short features list.
+* README: a photo of the tested hardware (NETUM DS5000), a short features list and screenshots of the example app.
 * pub.dev: screenshots of the example app.
 * Example: content stays clear of Android's navigation bar (edge-to-edge); unnamed devices show as "(no name)"
   in the log.

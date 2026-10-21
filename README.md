@@ -18,6 +18,12 @@ Android. Scan streams, several scanners at once, typed commands, auto-reconnect 
   is in the background.
 - **Debuggable:** an opt-in traffic log shows every packet, classified.
 
+| Scanners | Scans | Console |
+|:---:|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/AndresMontaniv/netum_bluetooth_scanner/main/doc/screenshots/scanners.webp" alt="Scanners tab: connected, saved and paired scanners" width="220"> | <img src="https://raw.githubusercontent.com/AndresMontaniv/netum_bluetooth_scanner/main/doc/screenshots/scans.webp" alt="Scans tab: barcodes with their scanner and time" width="220"> | <img src="https://raw.githubusercontent.com/AndresMontaniv/netum_bluetooth_scanner/main/doc/screenshots/console.webp" alt="Console tab: settings, queries and their results" width="220"> |
+
+*Screenshots of the [example app](example/); every control is explained in its [guide](doc/example_app.md).*
+
 > **Not affiliated with or endorsed by NETUM.** "NETUM" is used only to identify the hardware this plugin talks to.
 
 ## What it is / isn't
