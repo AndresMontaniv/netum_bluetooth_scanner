@@ -24,9 +24,14 @@ final class NetumBluetoothUnavailable extends NetumException {
 
 /// Required runtime permissions are missing.
 final class NetumPermissionDenied extends NetumException {
-  /// Creates the error listing the [missing] permissions.
-  NetumPermissionDenied(this.missing)
-    : super('Missing permissions: ${missing.join(', ')}');
+  /// Creates the error listing the [missing] permissions. When the platform
+  /// couldn't name them, [platformMessage] (if any) is the message instead.
+  NetumPermissionDenied(this.missing, {String? platformMessage})
+    : super(
+        missing.isEmpty && platformMessage != null
+            ? 'Permission denied: $platformMessage'
+            : 'Missing permissions: ${missing.join(', ')}',
+      );
 
   /// Platform names of the missing permissions.
   final List<String> missing;

@@ -1,3 +1,12 @@
+## 0.1.2
+
+* Fix (Android 12+): an SPP connect no longer fails with `NetumPermissionDenied` when the app has
+  `BLUETOOTH_CONNECT` but not `BLUETOOTH_SCAN`. Cancelling a running discovery before the connect (a
+  speed-up) now happens only when `BLUETOOTH_SCAN` is granted, and can't fail the connect. The connection
+  permission scope still asks for `BLUETOOTH_CONNECT` only.
+* `NetumPermissionDenied` from a platform permission error now lists the missing permission instead of an
+  empty list. If the platform doesn't name one, the error's message is the platform's message.
+
 ## 0.1.1
 
 * README: a photo of the tested hardware (NETUM DS5000), a short features list and screenshots of the example app.

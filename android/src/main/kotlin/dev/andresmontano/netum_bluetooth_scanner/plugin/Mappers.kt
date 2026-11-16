@@ -9,6 +9,7 @@ import dev.andresmontano.netum_bluetooth_scanner.core.Transport
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.AdapterState
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.PermissionResult
 import dev.andresmontano.netum_bluetooth_scanner.core.adapter.PermissionScope
+import dev.andresmontano.netum_bluetooth_scanner.core.adapter.Permissions
 import dev.andresmontano.netum_bluetooth_scanner.generated.ActiveLinkMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.AdapterStateMsg
 import dev.andresmontano.netum_bluetooth_scanner.generated.DiscoveredDeviceMsg
@@ -84,5 +85,5 @@ internal inline fun <T> bridge(block: () -> T): T =
     } catch (e: NetumError) {
         throw e.toFlutterError()
     } catch (e: SecurityException) {
-        throw FlutterError(NetumError.PERMISSION_DENIED, e.message, null)
+        throw FlutterError(NetumError.PERMISSION_DENIED, e.message, Permissions.namedIn(e.message))
     }

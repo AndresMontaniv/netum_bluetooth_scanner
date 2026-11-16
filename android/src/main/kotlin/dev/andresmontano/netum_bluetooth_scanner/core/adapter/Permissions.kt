@@ -71,6 +71,30 @@ class Permissions(private val context: Context) {
         }
     }
 
+    /**
+     * Whether `cancelDiscovery()` may be called: Android 12+ needs BLUETOOTH_SCAN, which the
+     * connection scope doesn't ask for. Without it, this app can't have started a discovery.
+     */
+    fun canCancelDiscovery(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.S || isGranted(Manifest.permission.BLUETOOTH_SCAN)
+
+    /**
+     * A `permission-denied` error for [e], listing the permissions it names or, when it names
+     * none, the Bluetooth runtime permissions not granted. Never an empty list when one is missing.
+     */
+    fun deniedError(e: SecurityException): NetumError {
+        val named = namedIn(e.message)
+        val missing = named.ifEmpty {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                listOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
+                    .filter { !isGranted(it) }
+            } else {
+                emptyList()
+            }
+        }
+        return NetumError(NetumError.PERMISSION_DENIED, e.message ?: "Missing permission", missing)
+    }
+
     suspend fun request(scope: PermissionScope): PermissionResult {
         val missing = missing(scope)
         if (missing.isEmpty()) return check(scope)
@@ -153,5 +177,12 @@ class Permissions(private val context: Context) {
         private const val KEY_REQUESTED = "requested."
         const val REQUEST_PERMISSIONS = 0x4E54
         const val REQUEST_ENABLE_BLUETOOTH = 0x4E55
+
+        private val PERMISSION_NAME = Regex("""android\.permission\.[A-Z_]+""")
+
+        /** The `android.permission.*` names in a SecurityException message, e.g. "Need android.permission.BLUETOOTH_SCAN permission…". */
+        fun namedIn(message: String?): List<String> =
+            message?.let { PERMISSION_NAME.findAll(it).map { match -> match.value }.distinct().toList() }
+                ?: emptyList()
     }
 }
