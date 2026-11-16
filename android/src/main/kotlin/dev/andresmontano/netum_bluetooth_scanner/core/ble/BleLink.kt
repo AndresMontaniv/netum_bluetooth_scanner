@@ -94,7 +94,7 @@ class BleLink(
             }
         } catch (e: SecurityException) {
             finish(userInitiated = false, platformCode = null, message = e.message)
-            throw NetumError(NetumError.PERMISSION_DENIED, e.message ?: "Missing permission")
+            throw manager.permissions.deniedError(e)
         }
         setState(LinkState.CONNECTED, userInitiated = true)
     }

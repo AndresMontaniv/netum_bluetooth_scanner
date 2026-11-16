@@ -16,7 +16,7 @@ NetumException mapPlatformException(PlatformException error) {
     'permission-denied' => NetumPermissionDenied([
       if (details is List)
         for (final permission in details) '$permission',
-    ]),
+    ], platformMessage: error.message),
     'bluetooth-unavailable' => NetumBluetoothUnavailable(
       AdapterState.values.asNameMap()[details] ?? AdapterState.unknown,
     ),

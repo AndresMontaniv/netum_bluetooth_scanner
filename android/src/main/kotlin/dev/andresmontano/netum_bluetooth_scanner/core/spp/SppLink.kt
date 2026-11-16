@@ -67,7 +67,7 @@ class SppLink(
             throw e
         } catch (e: SecurityException) {
             finish(userInitiated = false, message = e.message)
-            throw NetumError(NetumError.PERMISSION_DENIED, e.message ?: "Missing permission")
+            throw manager.permissions.deniedError(e)
         }
         socket = opened
         setState(LinkState.CONNECTED, userInitiated = true)
@@ -132,8 +132,7 @@ class SppLink(
     // region Socket
 
     private suspend fun openSocket(timeoutMs: Long): BluetoothSocket = withContext(Dispatchers.IO) {
-        // Discovery slows RFCOMM connects down a lot.
-        manager.adapterMonitor.adapter?.cancelDiscovery()
+        cancelDiscovery()
         try {
             connectWith(device.createRfcommSocketToServiceRecord(SPP_UUID), timeoutMs)
         } catch (e: IOException) {
@@ -145,6 +144,19 @@ class SppLink(
             } catch (e2: IOException) {
                 throw NetumError(NetumError.CONNECTION_FAILED, "SPP connect failed: ${e2.message}")
             }
+        }
+    }
+
+    /**
+     * Discovery slows RFCOMM connects down a lot, so stop it first. Only a speed-up: it needs
+     * BLUETOOTH_SCAN on Android 12+, which connecting doesn't require, and it never fails a connect.
+     */
+    private fun cancelDiscovery() {
+        if (!manager.permissions.canCancelDiscovery()) return
+        try {
+            manager.adapterMonitor.adapter?.cancelDiscovery()
+        } catch (e: SecurityException) {
+            Log.w(TAG, "cancelDiscovery not allowed: ${e.message}")
         }
     }
 

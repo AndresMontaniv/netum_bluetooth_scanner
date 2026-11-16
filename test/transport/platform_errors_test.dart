@@ -43,6 +43,12 @@ void main() {
     );
   });
 
+  test('permission-denied without names keeps the platform message', () {
+    final error = map('permission-denied') as NetumPermissionDenied;
+    expect(error.missing, isEmpty);
+    expect(error.message, 'Permission denied: msg');
+  });
+
   test('other codes become NetumPlatformError', () {
     final error = map('discovery-failed', details: 2);
     expect(error, isA<NetumPlatformError>());
