@@ -25,7 +25,7 @@ class _ScannersPageState extends State<ScannersPage> {
   DiscoveryFilter _filter = DiscoveryFilter.likelyNetum;
   NetumTransport _transport = NetumTransport.ble;
   StreamSubscription<DiscoveredScanner>? _discovery;
-  StreamSubscription<ConnectionEvent>? _connections;
+  StreamSubscription<List<NetumDevice>>? _devices;
   late final AppLifecycleListener _lifecycle;
 
   AppState get _state => widget.state;
@@ -35,10 +35,9 @@ class _ScannersPageState extends State<ScannersPage> {
   @override
   void initState() {
     super.initState();
-    // A new connection may add a saved entry or a pairing.
-    _connections = _netum.connectionEvents.listen((event) {
-      if (event.state == NetumConnectionState.connected) unawaited(_reload());
-    });
+    // A connection may add a saved entry or a pairing; a rename (setName,
+    // or getBluetoothInfo reading a new name) changes a saved name.
+    _devices = _netum.devices.listen((_) => unawaited(_reload()));
     // Pairings change outside the app (Settings → Bluetooth).
     _lifecycle = AppLifecycleListener(onResume: () => unawaited(_reload()));
     unawaited(_reload());
@@ -48,7 +47,7 @@ class _ScannersPageState extends State<ScannersPage> {
   void dispose() {
     _lifecycle.dispose();
     unawaited(_discovery?.cancel());
-    unawaited(_connections?.cancel());
+    unawaited(_devices?.cancel());
     super.dispose();
   }
 

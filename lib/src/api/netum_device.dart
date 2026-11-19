@@ -35,8 +35,9 @@ abstract interface class DeviceHost {
   /// [device] connected; remember it for `restoreSaved`.
   Future<void> remember(NetumDevice device);
 
-  /// [device] was renamed; update its saved entry, if any.
-  Future<void> updateSavedName(NetumDevice device);
+  /// [device]'s name changed: update its saved entry, if any, and announce
+  /// it on the device list.
+  Future<void> onRenamed(NetumDevice device);
 
   /// A device changed state.
   void onConnectionEvent(ConnectionEvent event);
@@ -86,7 +87,12 @@ class NetumDevice {
   Timer? _giveUpTimer;
   bool _givingUp = false;
 
-  /// The last known advertised or bonded name.
+  /// The last known name: the one given when the handle was created or
+  /// connected, else the saved, advertised or bonded name.
+  ///
+  /// Another phone may have renamed the scanner since. [getBluetoothInfo]
+  /// reads the real name and updates this (and the saved entry), as
+  /// [setName] does; both make `NetumScanner.devices` emit.
   String? get name => _name;
 
   /// The current connection state.
@@ -291,7 +297,7 @@ class NetumDevice {
     final command = NetumCommand.system.setName(name);
     await _send(command);
     _name = name;
-    await _host.updateSavedName(this);
+    await _host.onRenamed(this);
   }
 
   /// ⚠️ Switches the scanner's Bluetooth mode. The link drops, and the
@@ -333,11 +339,15 @@ class NetumDevice {
 
   /// Reads the Bluetooth module's name, Classic MAC and firmware (three
   /// queued queries). Works over BLE and SPP.
+  ///
+  /// The name is the scanner's real one. When it differs from [name] (e.g.
+  /// another phone renamed the scanner), [name] and the saved entry, if
+  /// any, take it, and `NetumScanner.devices` emits.
   Future<BluetoothInfo> getBluetoothInfo() async {
     final nameReply = await _query(NetumCommand.system.bluetoothName);
     final addressReply = await _query(NetumCommand.system.bluetoothAddress);
     final versionReply = await _query(NetumCommand.system.bluetoothFirmware);
-    return BluetoothInfo(
+    final info = BluetoothInfo(
       name:
           parseBluetoothName(nameReply) ??
           (throw NetumUnexpectedReply(nameReply)),
@@ -348,6 +358,11 @@ class NetumDevice {
           parseBluetoothFirmware(versionReply) ??
           (throw NetumUnexpectedReply(versionReply)),
     );
+    if (info.name != _name) {
+      _name = info.name;
+      await _host.onRenamed(this);
+    }
+    return info;
   }
 
   /// Reads how many scans are stored on the scanner (inventory mode).
@@ -384,8 +399,8 @@ class NetumDevice {
   // endregion
 
   /// Reads the scanner's identity. BLE: the Device Information Service (no
-  /// scanner command). SPP: `AT+ADDR` and `AT+VER`. Fields the scanner does
-  /// not expose are `null`.
+  /// scanner command). SPP: [getBluetoothInfo], so it also refreshes [name].
+  /// Fields the scanner does not expose are `null`.
   Future<DeviceInfo> getDeviceInfo() async {
     _ensureConnected();
     if (transport == NetumTransport.spp) {

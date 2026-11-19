@@ -42,12 +42,16 @@ class _PickyTransport extends FakeTransport {
 
 class _MemoryStore implements NetumStore {
   String? json;
+  int saves = 0;
 
   @override
   Future<String?> load() async => json;
 
   @override
-  Future<void> save(String json) async => this.json = json;
+  Future<void> save(String json) async {
+    saves++;
+    this.json = json;
+  }
 }
 
 void main() {
@@ -102,6 +106,81 @@ void main() {
     final saved = await netum.savedScanners();
     expect(saved.map((s) => s.id), [_b, _a]);
     expect(saved.first.name, 'Netum-02');
+  });
+
+  group('getBluetoothInfo reads the real name', () {
+    late _MemoryStore store;
+
+    setUp(() => netum.store = store = _MemoryStore());
+
+    /// Answers the `AT+NAME`, `AT+ADDR`, `AT+VER` queries of [device].
+    Future<BluetoothInfo> bluetoothInfo(NetumDevice device, String name) async {
+      final info = device.getBluetoothInfo();
+      for (final reply in ['+NAME=$name', '+ADDR=DC0D3060B42C', '+VER=1.6.2']) {
+        await pumpEventQueue();
+        transport.receive(device.id, '$reply\r'.codeUnits);
+      }
+      return info;
+    }
+
+    test(
+      'a new name updates the handle, the saved entry and devices',
+      () async {
+        await netum.connect(_a, transport: NetumTransport.ble);
+        final b = await netum.connect(
+          _b,
+          transport: NetumTransport.ble,
+          name: 'Old name',
+        );
+        final lists = <List<NetumDevice>>[];
+        final sub = netum.devices.listen(lists.add);
+
+        final info = await bluetoothInfo(b, 'New name');
+        await pumpEventQueue();
+
+        expect(info.name, 'New name');
+        expect(b.name, 'New name');
+        final saved = await netum.savedScanners();
+        expect(saved.map((s) => s.id), [_b, _a]);
+        expect(saved.first.name, 'New name');
+        expect(lists, isNotEmpty);
+        await sub.cancel();
+      },
+    );
+
+    test('the same name writes nothing and emits nothing', () async {
+      final a = await netum.connect(
+        _a,
+        transport: NetumTransport.ble,
+        name: 'Netum-01',
+      );
+      await pumpEventQueue();
+      final saves = store.saves;
+      final lists = <List<NetumDevice>>[];
+      final sub = netum.devices.listen(lists.add);
+
+      await bluetoothInfo(a, 'Netum-01');
+      await pumpEventQueue();
+
+      expect(store.saves, saves);
+      expect(lists, isEmpty);
+      await sub.cancel();
+    });
+
+    test('an unsaved device stays unsaved', () async {
+      final a = await netum.connect(
+        _a,
+        transport: NetumTransport.ble,
+        name: 'Old name',
+        remember: false,
+      );
+
+      await bluetoothInfo(a, 'New name');
+
+      expect(a.name, 'New name');
+      expect(await netum.savedScanners(), isEmpty);
+      expect(store.saves, 0);
+    });
   });
 
   test('remember: false skips saving', () async {

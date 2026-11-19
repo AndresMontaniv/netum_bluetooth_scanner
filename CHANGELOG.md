@@ -1,3 +1,12 @@
+## 0.1.3
+
+* Fix: `getBluetoothInfo()` now updates the device's `name` (and its saved entry, if any) when the name it
+  reads from the scanner differs, e.g. after another phone renamed the scanner. `getDeviceInfo()` over SPP
+  does too. Note that `connect(name: …)` still sets the name you pass, so pass the corrected one.
+* `NetumScanner.devices` also emits when a device is renamed (`setName()`, or `getBluetoothInfo()` reading
+  a new name).
+* Example: the Scanners tab refreshes on `devices`, so a rename shows at once.
+
 ## 0.1.2
 
 * Fix (Android 12+): an SPP connect no longer fails with `NetumPermissionDenied` when the app has
