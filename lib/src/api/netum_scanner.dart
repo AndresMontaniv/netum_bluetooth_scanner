@@ -426,7 +426,8 @@ class NetumScanner implements DeviceHost {
     _devices.values.where((d) => d.isConnected),
   );
 
-  /// Emits [knownDevices] whenever a handle is added or changes state.
+  /// Emits [knownDevices] whenever a handle is added, changes state or is
+  /// renamed (`setName`, or `getBluetoothInfo` reading a new name).
   Stream<List<NetumDevice>> get devices => _deviceLists.stream;
 
   /// How many devices may be connected at once (1–7, default 7).
@@ -559,30 +560,36 @@ class NetumScanner implements DeviceHost {
   });
 
   @override
-  Future<void> updateSavedName(NetumDevice device) => _updateSaved(
-    (saved) => [
-      for (final entry in saved)
-        if (entry.id == device.id)
-          SavedScanner(
-            id: entry.id,
-            transport: entry.transport,
-            name: device.name,
-            lastConnected: entry.lastConnected,
-            autoReconnect: entry.autoReconnect,
-            reconnectPolicy: entry.reconnectPolicy,
-          )
-        else
-          entry,
-    ],
-  );
+  Future<void> onRenamed(NetumDevice device) {
+    if (!_deviceLists.isClosed) _deviceLists.add(knownDevices);
+    return _updateSaved(
+      (saved) => saved.any((s) => s.id == device.id)
+          ? [
+              for (final entry in saved)
+                if (entry.id == device.id)
+                  SavedScanner(
+                    id: entry.id,
+                    transport: entry.transport,
+                    name: device.name,
+                    lastConnected: entry.lastConnected,
+                    autoReconnect: entry.autoReconnect,
+                    reconnectPolicy: entry.reconnectPolicy,
+                  )
+                else
+                  entry,
+            ]
+          : null,
+    );
+  }
 
   /// Serializes read-modify-write cycles on the store.
+  /// [update] returns `null` to leave the store untouched.
   Future<void> _updateSaved(
-    List<SavedScanner> Function(List<SavedScanner> saved) update,
+    List<SavedScanner>? Function(List<SavedScanner> saved) update,
   ) {
     final write = _storeWrites.then((_) async {
-      final saved = decodeSavedScanners(await store.load());
-      await store.save(encodeSavedScanners(update(saved)));
+      final next = update(decodeSavedScanners(await store.load()));
+      if (next != null) await store.save(encodeSavedScanners(next));
     });
     _storeWrites = write.catchError((Object _) {});
     return write;
